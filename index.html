@@ -452,18 +452,15 @@ let currentPhase = 'phase-landing';
                 
                 // Ambil poin terbaru dari server Cloudflare
                 fetch(`${API_URL}/status?username=${savedUser}`)
-                    .then(res => res.json())
-                    .then(data => {
-                        // Pastikan mengambil properti 'points' atau 'poin' dari Worker
-                        const serverPoin = data.points || data.poin; 
-                        
-                        if (serverPoin !== undefined) {
-                            currentPoin = parseInt(serverPoin);
-                            // UPDATE LAYAR SEGERA
-                            $('poin-display').innerText = currentPoin;
-                            localStorage.setItem('userPoin', currentPoin);
-                        }
-                    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.poin !== undefined) { // Pakai .poin
+            currentPoin = parseInt(data.poin);
+            $('poin-display').innerText = currentPoin;
+            localStorage.setItem('userPoin', currentPoin);
+        }
+    });
+
                     .catch(err => console.error("Gagal sinkron database"));
             } else {
                 $('poin-display').innerText = 0;
@@ -481,62 +478,58 @@ let currentPhase = 'phase-landing';
         }
 
                 async function handleAuthSubmit(e) {
-            e.preventDefault();
-            const username = $('input-username').value.trim().toLowerCase();
-            const passwordInputs = document.querySelectorAll('input[type="password"]');
-            const password = passwordInputs[0].value;
-            const confirmPass = passwordInputs[1] ? passwordInputs[1].value : null;
-            const isSignUp = !$('box-confirm').classList.contains('hidden');
+    e.preventDefault();
+    const username = $('input-username').value.trim().toLowerCase();
+    const passwordInputs = document.querySelectorAll('input[type="password"]');
+    const password = passwordInputs[0].value;
+    const confirmPass = passwordInputs[1] ? passwordInputs[1].value : null;
+    const isSignUp = !$('box-confirm').classList.contains('hidden');
 
-            if (!username || !password) return alert("Harap isi username dan password!");
+    if (!username || !password) return alert("Harap isi username dan password!");
 
-            const btn = $('btn-auth');
-            btn.disabled = true; 
-            btn.innerText = "PROCESSING...";
+    const btn = $('btn-auth');
+    btn.disabled = true; 
+    btn.innerText = "PROCESSING...";
 
-            try {
-                const endpoint = isSignUp ? "/register" : "/login";
-                if (isSignUp && password !== confirmPass) throw new Error("Password tidak cocok!");
+    try {
+        const endpoint = isSignUp ? "/register" : "/login";
+        if (isSignUp && password !== confirmPass) throw new Error("Password tidak cocok!");
 
-                const res = await fetch(`${API_URL}${endpoint}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password })
-                });
-                const data = await res.json();
+        const res = await fetch(`${API_URL}${endpoint}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+        });
+        const data = await res.json();
 
-                if (data.success) {
-                    if (isSignUp) {
-                        alert("✅ Registrasi Sukses! Silakan Login.");
-                        toggleAuth('signin');
-                    } else {
-                        // Simpan Status Login
-                        localStorage.setItem('isLoggedIn', 'true');
-                        localStorage.setItem('username', username);
-                        
-                        // FIX KOIN PERMANEN: Paksa variabel lokal mengikuti data dari Database
-                        const serverPoin = parseInt(data.poin || 0);
-                        localStorage.setItem('userPoin', serverPoin);
-                        currentPoin = serverPoin; // Update variabel global di JS
+        if (data.success) {
+            if (isSignUp) {
+                alert("✅ Registrasi Sukses! Silakan Login.");
+                toggleAuth('signin');
+            } else {
+                localStorage.setItem('isLoggedIn', 'true');
+                localStorage.setItem('username', username);
+                
+                // AMBIL POIN DARI SERVER (Gunakan data.poin agar sinkron dengan Worker)
+                const serverPoin = parseInt(data.poin || 0);
+                currentPoin = serverPoin; 
+                localStorage.setItem('userPoin', serverPoin);
 
-                        // Update Tampilan Dashboard
-                        $('user-display').innerText = username.toUpperCase();
-                        $('poin-display').innerText = currentPoin; // Tampilkan poin asli server
-                        
-                        updateDashboardUI();
-                        showPhase('phase-dashboard');
-                    }
-                } else {
-                    alert("❌ " + (data.msg || "Gagal menghubungi server"));
-                }
-            } catch (err) { 
-                alert("Kesalahan: " + err.message); 
-            } finally { 
-                btn.disabled = false; 
-                btn.innerText = isSignUp ? "DAFTAR SEKARANG" : "AUTHORIZE ACCESS"; 
+                $('user-display').innerText = username.toUpperCase();
+                $('poin-display').innerText = currentPoin;
+                
+                showPhase('phase-dashboard');
             }
+        } else {
+            alert("❌ " + (data.msg || "Gagal login"));
         }
-
+    } catch (err) { 
+        alert("Kesalahan: " + err.message); 
+    } finally { 
+        btn.disabled = false; 
+        btn.innerText = isSignUp ? "DAFTAR SEKARANG" : "AUTHORIZE ACCESS"; 
+    }
+}
 
         // 4. FUNGSI DASHBOARD (Deploy & Monitor)
         async function handleDeployCampaign() {
