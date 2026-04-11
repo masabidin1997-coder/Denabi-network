@@ -426,36 +426,53 @@
 
         // 4. FUNGSI DASHBOARD (Deploy & Monitor)
         async function handleDeployCampaign() {
-            const targetWeb = $('target-web').value;
-            const adLink1 = $('ad-link-1').value;
-            const viewValue = parseInt($('view-range').value); 
-            const username = localStorage.getItem('username');
+    const targetWeb = $('target-web').value;
+    const adLink1 = $('ad-link-1').value;
+    const viewValue = parseInt($('view-range').value); 
+    const username = localStorage.getItem('username') || "Member";
 
-            if (!targetWeb || !adLink1) return alert("Lengkapi data!");
-            if (currentPoin < viewValue) return alert("Poin tidak cukup!");
+    if (!targetWeb || !adLink1) return alert("Harap isi semua kolom!");
+    if (currentPoin < viewValue) return alert("Poin Anda tidak cukup!");
 
-            if (confirm(`Gunakan ${viewValue} Poin untuk deploy?`)) {
-                const btn = document.querySelector('button[onclick="handleDeployCampaign()"]');
-                btn.disabled = true; btn.innerText = "DEPLOYING...";
+    if (confirm("Gunakan " + viewValue + " Poin untuk deploy?")) {
+        const btn = document.querySelector('button[onclick="handleDeployCampaign()"]');
+        btn.disabled = true;
+        btn.innerText = "DEPLOYING...";
 
-                try {
-                    const res = await fetch(`${API_URL}/deploy`, {
-                        method: 'POST',
-                        body: JSON.stringify({ username, url: targetWeb, ad1: adLink1, target: viewValue })
-                    });
-                    const data = await res.json();
-                    if (data.success) {
-                        currentPoin -= viewValue;
-                        $('poin-display').innerText = currentPoin;
-                        localStorage.setItem('userPoin', currentPoin);
-                        alert("🚀 KAMPANYE BERHASIL DIDEPLOY!");
-                        refreshCampaignStatus();
-                    }
-                } catch (e) { alert("Error koneksi Cloudflare!"); }
-                btn.disabled = false; btn.innerText = "Deploy Campaign";
+        try {
+            const res = await fetch(`${API_URL}/deploy`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    username: username,
+                    url: targetWeb,
+                    ad1: adLink1,
+                    target: viewValue
+                })
+            });
+
+            const data = await res.json();
+
+            if (data.success) {
+                currentPoin -= viewValue;
+                $('poin-display').innerText = currentPoin;
+                localStorage.setItem('userPoin', currentPoin);
+                
+                // Aktifkan monitor progres
+                $('campaign-monitor').classList.remove('hidden');
+                alert("🚀 KAMPANYE BERHASIL DIDEPLOY!");
+                refreshCampaignStatus(); 
+            } else {
+                alert("Gagal: " + (data.msg || "Terjadi kesalahan"));
             }
+        } catch (e) {
+            alert("Koneksi ke Cloudflare gagal. Cek API_URL Anda.");
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "Deploy Campaign";
         }
-
+    }
+}
         async function refreshCampaignStatus() {
             const username = localStorage.getItem('username');
             if (!username || currentPhase !== 'phase-dashboard') return;
