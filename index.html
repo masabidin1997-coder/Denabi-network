@@ -440,27 +440,33 @@
         window.goToLanding = () => { localStorage.clear(); location.reload(); };
 
         // 3. FUNGSI LOGIN & AUTH
-        window.onload = function() {
-    const savedUser = localStorage.getItem('username');
-    if (localStorage.getItem('isLoggedIn') === 'true' && savedUser) {
-        $('user-display').innerText = savedUser.toUpperCase();
-        showPhase('phase-dashboard');
-        refreshCampaignStatus();
-        
-        fetch(`${API_URL}/status?username=${savedUser}`)
-            .then(res => res.json())
-            .then(data => {
-                const serverPoin = data.poin || data.points;
-                if(serverPoin !== undefined) {
-                    // INI KUNCINYA: Paksa variabel mengikuti server
-                    currentPoin = parseInt(serverPoin); 
-                    updateDashboardUI();
-                }
-            });
-    } else {
-        $('poin-display').innerText = currentPoin;
-    }
-};
+                window.onload = function() {
+            const savedUser = localStorage.getItem('username');
+            const isLoggedIn = localStorage.getItem('isLoggedIn');
+
+            if (isLoggedIn === 'true' && savedUser) {
+                $('user-display').innerText = savedUser.toUpperCase();
+                showPhase('phase-dashboard');
+                refreshCampaignStatus();
+                
+                // Ambil poin terbaru dari server
+                fetch(`${API_URL}/status?username=${savedUser}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        // Kita cek semua kemungkinan nama variabel dari server (poin atau points)
+                        const serverPoin = data.poin || data.points; 
+                        
+                        if(serverPoin !== undefined) {
+                            currentPoin = parseInt(serverPoin);
+                            // Paksa update tampilan
+                            $('poin-display').innerText = currentPoin;
+                            localStorage.setItem('userPoin', currentPoin);
+                        }
+                    });
+            } else {
+                $('poin-display').innerText = 0;
+            }
+        };
 
         function toggleAuth(type) {
             const isSignUp = type === 'signup';
