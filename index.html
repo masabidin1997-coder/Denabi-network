@@ -415,11 +415,12 @@
         const API_URL = "https://denabiapp.masabidin97.workers.dev";
         const $ = (id) => document.getElementById(id);
 
-        let currentPoin = parseInt(localStorage.getItem('userPoin')) || 0;
-        let timeLeft = 60;
-        let timerInterval;
-        let currentWorkingId = null;
-        let currentPhase = 'phase-landing';
+       let currentPoin = 0; // Mulai dari 0 agar sinkron dengan server
+let timeLeft = 60;
+let timerInterval;
+let currentWorkingId = null;
+let currentPhase = 'phase-landing';
+
 
         // 2. FUNGSI NAVIGASI GLOBAL
         window.showPhase = function(id) {
@@ -440,7 +441,7 @@
         window.goToLanding = () => { localStorage.clear(); location.reload(); };
 
         // 3. FUNGSI LOGIN & AUTH
-                window.onload = function() {
+                        window.onload = function() {
             const savedUser = localStorage.getItem('username');
             const isLoggedIn = localStorage.getItem('isLoggedIn');
 
@@ -449,20 +450,21 @@
                 showPhase('phase-dashboard');
                 refreshCampaignStatus();
                 
-                // Ambil poin terbaru dari server
+                // Ambil poin terbaru dari server Cloudflare
                 fetch(`${API_URL}/status?username=${savedUser}`)
                     .then(res => res.json())
                     .then(data => {
-                        // Kita cek semua kemungkinan nama variabel dari server (poin atau points)
-                        const serverPoin = data.poin || data.points; 
+                        // Pastikan mengambil properti 'points' atau 'poin' dari Worker
+                        const serverPoin = data.points || data.poin; 
                         
-                        if(serverPoin !== undefined) {
+                        if (serverPoin !== undefined) {
                             currentPoin = parseInt(serverPoin);
-                            // Paksa update tampilan
+                            // UPDATE LAYAR SEGERA
                             $('poin-display').innerText = currentPoin;
                             localStorage.setItem('userPoin', currentPoin);
                         }
-                    });
+                    })
+                    .catch(err => console.error("Gagal sinkron database"));
             } else {
                 $('poin-display').innerText = 0;
             }
