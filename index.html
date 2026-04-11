@@ -539,6 +539,27 @@
         function copyAffiliateLink() { navigator.clipboard.writeText($('affiliate-link').innerText).then(() => alert("Copied!")); }
 
         setInterval(() => { if(localStorage.getItem('isLoggedIn') === 'true') refreshCampaignStatus(); }, 20000);
+         async function refreshGlobalStats() {
+    try {
+        const res = await fetch(`${API_URL}/status`);
+        const data = await res.json();
+        
+        if (data.success) {
+            // Update angka Kampanye Aktif
+            document.querySelector('.glass-card p.text-xl.font-black').innerText = data.onlineUsers;
+            
+            // Update angka Pejuang Online (Kampanye Aktif)
+            // Cari elemen yang berisi teks "Kampanye Aktif"
+            const stats = document.querySelectorAll('.glass-card .text-xl.font-black');
+            if (stats[1]) stats[1].innerText = data.activeCamps;
+        }
+    } catch (e) {
+        console.log("Gagal mengambil statistik global");
+    }
+}
+
+// Jalankan setiap 30 detik
+setInterval(refreshGlobalStats, 30000);
     </script>
 </body>
 </html>
