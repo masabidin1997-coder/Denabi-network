@@ -94,7 +94,19 @@
 
         /* VIEWER SPECIFIC STYLES */
         #phase-viewer { position: fixed; inset: 0; z-index: 200; background: #fff; display: flex; flex-direction: column; }
-        .viewer-header { background: var(--primary-red); color: white; padding: 15px; display: flex; justify-content: space-between; items-center; }
+        .viewer-header { 
+    background: var(--primary-red); 
+    color: white; 
+    padding: 10px 15px; 
+    display: flex; 
+    justify-content: space-between; 
+    items-center; 
+    position: relative;
+    z-index: 999; /* Agar selalu di atas iklan */
+    height: 70px; /* Berikan tinggi tetap */
+    width: 100%;
+    box-sizing: border-box;
+}
         .click-overlay { position: absolute; inset: 0; background: rgba(163, 0, 0, 0.8); backdrop-filter: blur(8px); z-index: 210; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: white; cursor: pointer; }
     </style>
 </head>
@@ -141,9 +153,10 @@
                 <div class="flex items-center gap-8 text-4xl">
                     <i class="fa-solid fa-dollar-sign opacity-80"></i>
                     <div class="w-[1px] h-10 bg-white/20"></div>
-                    <div class="bg-white p-2 rounded-xl">
-                        <img src="LOGOADSTERRADISINI" class="h-8 grayscale brightness-0" alt="Adsterra" onerror="this.src='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSTkKQsMBae8IfrrfVsBoCXl1qG0LiuBbjvBA&s'">
-                    </div>
+                  <div class="border-[3px] border-white/40 rounded-[28px] p-2.5 flex items-center justify-center aspect-square shadow-[0_0_20px_rgba(255,255,255,0.15)] bg-white/5 backdrop-blur-sm">
+    <img src="https://i.imgur.com/PwmtlIn.png" class="h-14 object-contain" alt="Den Abi Logo">
+</div>
+
                 </div>
                 <span class="text-[9px] font-black uppercase tracking-[0.4em] opacity-40">Push Dolar Adsterra Engine</span>
             </div>
@@ -232,9 +245,11 @@
                     <i class="fa-solid fa-utensils text-xs"></i>
                     <span class="font-black text-lg" id="poin-display">9</span>
                 </div>
-                <button class="bg-white/10 border border-white/20 rounded-full px-4 py-2 text-[10px] font-black uppercase flex items-center gap-2 text-white">
-                    <i class="fa-solid fa-circle-question"></i> Panduan
-                </button>
+                <a href="https://chat.whatsapp.com/EXIp6tS8kVB8aXXSR45YC5?mode=gi_t" target="_blank" class="block">
+    <button class="bg-white/10 border border-white/20 rounded-full px-4 py-2 text-[10px] font-black uppercase flex items-center gap-2 text-white cursor-pointer hover:bg-white/20 transition-all">
+        <i class="fa-solid fa-users"></i> JOIN GRUB WHATSAPP
+    </button>
+</a>
                 <button onclick="goToLanding()" class="bg-white/10 border border-white/20 rounded-full px-4 py-2 text-[10px] font-black uppercase flex items-center gap-2 text-white">
                     <i class="fa-solid fa-power-off"></i> Logout
                 </button>
@@ -341,17 +356,21 @@
     </div>
 
     <div id="phase-viewer" class="hidden">
-        <div class="viewer-header">
-            <div class="leading-none">
-                <p class="text-[8px] font-bold uppercase opacity-70">Saling Visit Node</p>
-                <p class="text-sm font-black italic uppercase">TARGET: <span id="view-target-name">Member Site</span></p>
-            </div>
-            <div class="bg-white text-red-700 px-4 py-1 rounded-xl flex items-center gap-2 shadow-lg">
-                <span id="timer-viewer" class="text-2xl font-black">60</span>
-                <span class="text-[8px] font-black">DETIK</span>
-            </div>
-            <button onclick="stopFarming()" class="bg-black/20 px-4 py-2 rounded-lg text-[10px] font-black uppercase">STOP</button>
-        </div>
+       <div class="viewer-header">
+    <div class="leading-none flex-1 overflow-hidden mr-2">
+        <p class="text-[8px] font-bold uppercase opacity-70">Saling Visit Node</p>
+        <p class="text-sm font-black italic uppercase truncate" id="view-target-name">Member Site</p>
+    </div>
+
+    <div class="bg-white text-red-700 px-3 py-1 rounded-xl flex items-center justify-center gap-2 shadow-lg min-w-[80px]">
+        <span id="timer-viewer" class="text-2xl font-black">60</span>
+        <span class="text-[8px] font-black">DETIK</span>
+    </div>
+
+    <div class="ml-3">
+        <button onclick="stopFarming()" class="bg-black/20 px-3 py-2 rounded-lg text-[10px] font-black uppercase">STOP</button>
+    </div>
+</div>
         <div class="flex-1 relative bg-white">
             <iframe 
     id="ads-frame" 
@@ -428,24 +447,65 @@
         function goToLogin() { showPhase('phase-login'); }
         function goToLanding() { localStorage.clear(); location.reload(); }
 
-        function toggleAuth(type) {
+                function toggleAuth(type) {
             const isSignUp = type === 'signup';
+            
+            // Reset input saat pindah tab
+            $('input-username').value = "";
+            document.querySelectorAll('input[type="password"]').forEach(input => input.value = "");
+
             $('tab-signup').classList.toggle('opacity-40', !isSignUp);
             $('tab-signup').classList.toggle('border-b-2', isSignUp);
             $('tab-signin').classList.toggle('opacity-40', isSignUp);
             $('tab-signin').classList.toggle('border-b-2', !isSignUp);
             $('box-confirm').classList.toggle('hidden', !isSignUp);
-            $('btn-auth').innerText = isSignUp ? "SIGN UP PREMIUM" : "AUTHORIZE ACCESS";
+            
+            $('btn-auth').innerText = isSignUp ? "DAFTAR SEKARANG" : "AUTHORIZE ACCESS";
         }
 
+                // DATABASE LOKAL SEDERHANA
         function handleAuthSubmit(e) {
             e.preventDefault();
-            const user = $('input-username').value || "Elite Member";
-            localStorage.setItem('isLoggedIn', 'true');
-            localStorage.setItem('username', user);
-            localStorage.setItem('userPoin', currentPoin);
-            $('user-display').innerText = user.toUpperCase();
-            showPhase('phase-dashboard');
+            
+            const username = $('input-username').value.trim();
+            const password = document.querySelectorAll('input[type="password"]')[0].value;
+            const confirmPass = document.querySelectorAll('input[type="password"]')[1].value;
+            const isSignUp = !$('box-confirm').classList.contains('hidden');
+
+            if (!username || !password) {
+                return alert("Harap isi username dan password!");
+            }
+
+            if (isSignUp) {
+                // ALUR PENDAFTARAN (SIGN UP)
+                if (password !== confirmPass) {
+                    return alert("Konfirmasi password tidak cocok!");
+                }
+                
+                // Simpan data ke localStorage
+                localStorage.setItem(`user_${username}`, password);
+                alert("✅ Registrasi Sukses! Silakan Login dengan akun Anda.");
+                
+                // Kembalikan ke tampilan Sign In
+                toggleAuth('signin');
+                $('input-username').value = username; // isi otomatis username tadi
+            } else {
+                // ALUR MASUK (SIGN IN)
+                const savedPassword = localStorage.getItem(`user_${username}`);
+                
+                if (savedPassword && savedPassword === password) {
+                    // Login Berhasil
+                    localStorage.setItem('isLoggedIn', 'true');
+                    localStorage.setItem('username', username);
+                    localStorage.setItem('userPoin', currentPoin);
+                    
+                    $('user-display').innerText = username.toUpperCase();
+                    showPhase('phase-dashboard');
+                } else {
+                    // Login Gagal
+                    alert("❌ Username atau Password salah! Silakan daftar jika belum punya akun.");
+                }
+            }
         }
 
         // 4. FUNGSI DASHBOARD (Deploy & Monitor)
