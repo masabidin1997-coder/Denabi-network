@@ -409,76 +409,144 @@
             <button class="w-14 h-14 bg-white text-red-800 rounded-full shadow-2xl flex items-center justify-center text-2xl float"><i class="fa-solid fa-headset"></i></button>
         </a>
     </div>
+<script>
+     // 1. DEKLARASI VARIABEL (Sesuai HTML Lama)
+const API_URL = "https://denabiapp.masabidin97.workers.dev";
+const $ = (id) => document.getElementById(id);
 
-     <script>
-               // 1. DEKLARASI VARIABEL (Bagian Utama)
-        const API_URL = "https://denabiapp.masabidin97.workers.dev";
-        const $ = (id) => document.getElementById(id);
-
-       let currentPoin = 0; // Mulai dari 0 agar sinkron dengan server
+// Ambil koin dari memori yang sama dengan HTML lama (denabi_poin)
+let currentPoin = parseInt(localStorage.getItem('denabi_poin')) || 0;
 let timeLeft = 60;
 let timerInterval;
 let currentWorkingId = null;
 let currentPhase = 'phase-landing';
 
+// 2. FUNGSI NAVIGASI
+window.showPhase = function(id) {
+    const phases = ['phase-landing', 'phase-login', 'phase-dashboard', 'phase-viewer'];
+    phases.forEach(p => {
+        const el = $(p);
+        if (el) el.classList.add('hidden');
+    });
+    const target = $(id);
+    if (target) {
+        target.classList.remove('hidden');
+        currentPhase = id;
+        window.scrollTo(0, 0);
+    }
+};
 
-        // 2. FUNGSI NAVIGASI GLOBAL
-        window.showPhase = function(id) {
-            const phases = ['phase-landing', 'phase-login', 'phase-dashboard', 'phase-viewer'];
-            phases.forEach(p => {
-                const el = $(p);
-                if (el) el.classList.add('hidden');
-            });
-            const target = $(id);
-            if (target) {
-                target.classList.remove('hidden');
-                currentPhase = id;
-                window.scrollTo(0,0);
-            }
-        };
+window.goToLogin = () => showPhase('phase-login');
+window.goToLanding = () => {
+    localStorage.clear();
+    location.reload();
+};
 
-        window.goToLogin = () => showPhase('phase-login');
-        window.goToLanding = () => { localStorage.clear(); location.reload(); };
+// 3. PROSES AUTO-LOAD (Sama dengan HTML Lama)
+window.onload = function() {
+    const savedUser = localStorage.getItem('denabi_username');
+    const session = localStorage.getItem('isLoggedIn');
 
-        // 3. FUNGSI LOGIN & AUTH
-                                        window.onload = function() {
-            const savedUser = localStorage.getItem('username');
-            const isLoggedIn = localStorage.getItem('isLoggedIn');
+    if (session === 'true' && savedUser) {
+        if ($('user-display')) $('user-display').innerText = savedUser.toUpperCase();
+        showPhase('phase-dashboard');
+        
+        // Tarik poin asli dari server agar sinkron
+        fetch(`${API_URL}/status?username=${savedUser}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.poin !== undefined) {
+                    currentPoin = parseInt(data.poin);
+                    updateDashboardUI(); // Pastikan layar terupdate
+                }
+            })
+            .catch(err => console.error("Sync Error"));
+    } else {
+        updateDashboardUI();
+    }
+    refreshGlobalStats();
+};
 
-            if (isLoggedIn === 'true' && savedUser) {
-                // Gunakan $ agar lebih singkat sesuai fungsi yang sudah Anda buat
-                if($('user-display')) $('user-display').innerText = savedUser.toUpperCase();
-                showPhase('phase-dashboard');
-                refreshCampaignStatus();
-                
-                // Proses ambil poin (Fetch)
-                fetch(`${API_URL}/status?username=${savedUser}`)
-                    .then(res => res.json())
-                    .then(data => {
-                        // Pastikan pakai data.poin agar sinkron dengan Worker
-                        if (data.poin !== undefined) {
-                            currentPoin = parseInt(data.poin);
-                            if($('poin-display')) $('poin-display').innerText = currentPoin;
-                            localStorage.setItem('userPoin', currentPoin);
-                        }
-                    }) // DI SINI JANGAN KASIH TITIK KOMA (;)
-                    .catch(err => {
-                        console.error("Gagal sinkron database:", err);
-                    }); 
+// 4. FUNGSI AUTHENTICATION
+async function handleAuthSubmit(e) {
+    e.preventDefault();
+    const user = $('input-username').value.trim().toLowerCase();
+    const passwordInputs = document.querySelectorAll('input[type="password"]');
+    const pass = passwordInputs[0].value;
+    const confirmPass = passwordInputs[1] ? passwordInputs[1].value : null;
+    const isSignUp = !$('box-confirm').classList.contains('hidden');
+
+    if (!user || !pass) return alert("Lengkapi data!");
+
+    const btn = $('btn-auth');
+    btn.disabled = true;
+    btn.innerText = "PROCESSING...";
+
+    try {
+        const endpoint = isSignUp ? "/register" : "/login";
+        if (isSignUp && pass !== confirmPass) throw new Error("Password tidak cocok!");
+
+        const res = await fetch(`${API_URL}${endpoint}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: user, password: pass })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+            if (isSignUp) {
+                alert("Registrasi Sukses!");
+                toggleAuth('signin');
             } else {
-                if($('poin-display')) $('poin-display').innerText = 0;
+                // Simpan Sesuai Format HTML Lama
+                localStorage.setItem('isLoggedIn', 'true');
+                localStorage.setItem('denabi_username', user);
+                
+                currentPoin = parseInt(data.poin || 0);
+                updateDashboardUI();
+                showPhase('phase-dashboard');
             }
-        };
-
-        function toggleAuth(type) {
-            const isSignUp = type === 'signup';
-            $('input-username').value = "";
-            document.querySelectorAll('input[type="password"]').forEach(input => input.value = "");
-            $('tab-signup').className = `text-sm font-black uppercase tracking-widest ${isSignUp ? 'border-b-2 border-white pb-2' : 'opacity-40 pb-2'} transition-all`;
-            $('tab-signin').className = `text-sm font-black uppercase tracking-widest ${!isSignUp ? 'border-b-2 border-white pb-2' : 'opacity-40 pb-2'} transition-all`;
-            $('box-confirm').classList.toggle('hidden', !isSignUp);
-            $('btn-auth').innerText = isSignUp ? "DAFTAR SEKARANG" : "AUTHORIZE ACCESS";
+        } else {
+            alert(data.msg || "Gagal!");
         }
+    } catch (err) {
+        alert(err.message);
+    } finally {
+        btn.disabled = false;
+        btn.innerText = isSignUp ? "DAFTAR SEKARANG" : "AUTHORIZE ACCESS";
+    }
+}
+
+// 5. UPDATE UI (Pusat Sinkronisasi)
+function updateDashboardUI() {
+    if ($('poin-display')) $('poin-display').innerText = currentPoin;
+    // Simpan ke 'denabi_poin' agar terbaca oleh semua versi HTML Anda
+    localStorage.setItem('denabi_poin', currentPoin);
+}
+
+// 6. FUNGSI FARMING & STATS (Diperingkas)
+async function refreshGlobalStats() {
+    try {
+        const res = await fetch(`${API_URL}/status`);
+        const data = await res.json();
+        if (data.success) {
+            const stats = document.querySelectorAll('.glass-card .text-xl.font-black');
+            if (stats[0]) stats[0].innerText = data.onlineUsers || "124";
+            if (stats[1]) stats[1].innerText = data.activeCamps || "0";
+        }
+    } catch (e) {}
+}
+
+// Tambahkan Fungsi Toggle (Tadi sempat hilang)
+function toggleAuth(type) {
+    const isSignUp = type === 'signup';
+    $('input-username').value = "";
+    document.querySelectorAll('input[type="password"]').forEach(i => i.value = "");
+    $('tab-signup').className = `text-sm font-black uppercase tracking-widest ${isSignUp ? 'border-b-2 border-white pb-2' : 'opacity-40 pb-2'}`;
+    $('tab-signin').className = `text-sm font-black uppercase tracking-widest ${!isSignUp ? 'border-b-2 border-white pb-2' : 'opacity-40 pb-2'}`;
+    $('box-confirm').classList.toggle('hidden', !isSignUp);
+    $('btn-auth').innerText = isSignUp ? "DAFTAR SEKARANG" : "AUTHORIZE ACCESS";
+}
 
                 async function handleAuthSubmit(e) {
     e.preventDefault();
