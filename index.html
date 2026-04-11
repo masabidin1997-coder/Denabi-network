@@ -527,23 +527,27 @@
             }
         }
 
-        function startTimer() {
+                function startTimer() {
             clearInterval(timerInterval);
-            $('btn-claim-poin').disabled = true;
-            $('btn-claim-poin').innerText = "Selesaikan Visit Terlebih Dahulu...";
-            // Reset warna tombol ke abu-abu saat timer mulai ulang
-            $('btn-claim-poin').className = "w-full py-5 bg-gray-300 text-gray-500 rounded-3xl font-black uppercase text-xs";
+            const btnClaim = $('btn-claim-poin');
+            btnClaim.disabled = true;
+            btnClaim.innerText = "Selesaikan Visit Terlebih Dahulu...";
+            btnClaim.className = "w-full py-5 bg-gray-400 text-white rounded-3xl font-black uppercase text-xs opacity-50";
             
             timerInterval = setInterval(() => {
                 timeLeft--;
                 $('timer-viewer').innerText = timeLeft;
-                if ([45, 30, 15].includes(timeLeft)) { pauseTimerAndShowClick(); }
+                
+                if ([45, 30, 15].includes(timeLeft)) { 
+                    pauseTimerAndShowClick(); 
+                }
+                
                 if (timeLeft <= 0) {
                     clearInterval(timerInterval);
-                    $('btn-claim-poin').disabled = false;
-                    $('btn-claim-poin').innerText = "KLAIM TOKEN SEKARANG (+1)";
-                    // Tambahkan cursor-pointer agar bisa diklik di HP
-                    $('btn-claim-poin').className = "w-full py-5 bg-green-600 text-white rounded-3xl font-black uppercase text-xs animate-bounce cursor-pointer";
+                    btnClaim.disabled = false;
+                    btnClaim.innerText = "KLAIM TOKEN SEKARANG (+1)";
+                    // Kita tambahkan z-index tinggi lewat class agar tidak terhalang iframe
+                    btnClaim.className = "w-full py-5 bg-green-600 text-white rounded-3xl font-black uppercase text-xs animate-bounce cursor-pointer shadow-2xl relative z-[300]";
                 }
             }, 1000);
         }
