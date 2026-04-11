@@ -491,19 +491,43 @@
 
         // 5. FUNGSI FARMING (Cari Poin)
         async function startFarmingProcess() {
+    try {
+        // Kita panggil API status untuk mengambil tugas kampanye
+        const res = await fetch(`${API_URL}/status`); 
+        
+        // Cek jika respon dari Cloudflare tidak ok
+        if (!res.ok) throw new Error("Server Cloudflare bermasalah");
+
+        const data = await res.json();
+
+        if (data.success && data.campaign) {
+            currentWorkingId = data.campaign.username; 
+
+            // Pindah ke layar viewer
+            showPhase('phase-viewer'); 
+            
+            // Masukkan link target ke frame iklan
+            $('ads-frame').src = data.campaign.url; 
+            
+            // Tampilkan nama domain target
             try {
-                const res = await fetch(`${API_URL}/status`); 
-                const data = await res.json();
-                if (data.success && data.campaign) {
-                    currentWorkingId = data.campaign.username; 
-                    showPhase('phase-viewer');
-                    $('ads-frame').src = data.campaign.url; 
-                    $('view-target-name').innerText = new URL(data.campaign.url).hostname;
-                    timeLeft = 60;
-                    startTimer();
-                } else { alert("📭 Belum ada kampanye aktif."); }
-            } catch (e) { alert("Gagal terhubung ke Network."); }
+                $('view-target-name').innerText = new URL(data.campaign.url).hostname;
+            } catch(e) {
+                $('view-target-name').innerText = "Member Node";
+            }
+            
+            // Reset timer ke 60 detik dan mulai
+            timeLeft = 60;
+            $('timer-viewer').innerText = timeLeft;
+            startTimer();
+        } else {
+            alert("📭 Belum ada kampanye aktif dari member lain. Jadilah yang pertama deploy!");
         }
+    } catch (e) {
+        console.error("Error Detail:", e);
+        alert("Gagal terhubung ke Network. Pastikan link Worker di API_URL sudah benar dan Worker dalam status ACTIVE.");
+    }
+}
 
         function startTimer() {
             clearInterval(timerInterval);
