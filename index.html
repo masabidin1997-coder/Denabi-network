@@ -490,44 +490,41 @@
         }
 
         // 5. FUNGSI FARMING (Cari Poin)
-        async function startFarmingProcess() {
-    try {
-        // Kita panggil API status untuk mengambil tugas kampanye
-        const res = await fetch(`${API_URL}/status`); 
-        
-        // Cek jika respon dari Cloudflare tidak ok
-        if (!res.ok) throw new Error("Server Cloudflare bermasalah");
-
-        const data = await res.json();
-
-        if (data.success && data.campaign) {
-            currentWorkingId = data.campaign.username; 
-
-            // Pindah ke layar viewer
-            showPhase('phase-viewer'); 
-            
-            // Masukkan link target ke frame iklan
-            $('ads-frame').src = data.campaign.url; 
-            
-            // Tampilkan nama domain target
+                async function startFarmingProcess() {
             try {
-                $('view-target-name').innerText = new URL(data.campaign.url).hostname;
-            } catch(e) {
-                $('view-target-name').innerText = "Member Node";
+                const res = await fetch(`${API_URL}/status`); 
+                if (!res.ok) throw new Error("Server Cloudflare bermasalah");
+
+                const data = await res.json();
+
+                if (data.success && data.campaign) {
+                    currentWorkingId = data.campaign.username; 
+
+                    showPhase('phase-viewer'); 
+                    
+                    // Masukkan link target ke frame iklan
+                    $('ads-frame').src = data.campaign.url; 
+                    
+                    // --- PERBAIKAN MEMBER NODE ---
+                    try {
+                        // Mengambil domain (misal: google.com) agar tulisan Member Node berubah otomatis
+                        const domain = new URL(data.campaign.url).hostname;
+                        $('view-target-name').innerText = domain.toUpperCase();
+                    } catch(e) {
+                        $('view-target-name').innerText = "ACTIVE NODE";
+                    }
+                    
+                    timeLeft = 60;
+                    $('timer-viewer').innerText = timeLeft;
+                    startTimer();
+                } else {
+                    alert("📭 Belum ada kampanye aktif dari member lain. Jadilah yang pertama deploy!");
+                }
+            } catch (e) {
+                console.error("Error Detail:", e);
+                alert("Gagal terhubung ke Network.");
             }
-            
-            // Reset timer ke 60 detik dan mulai
-            timeLeft = 60;
-            $('timer-viewer').innerText = timeLeft;
-            startTimer();
-        } else {
-            alert("📭 Belum ada kampanye aktif dari member lain. Jadilah yang pertama deploy!");
         }
-    } catch (e) {
-        console.error("Error Detail:", e);
-        alert("Gagal terhubung ke Network. Pastikan link Worker di API_URL sudah benar dan Worker dalam status ACTIVE.");
-    }
-}
 
         function startTimer() {
             clearInterval(timerInterval);
@@ -549,12 +546,15 @@
         function pauseTimerAndShowClick() { clearInterval(timerInterval); $('click-overlay').classList.remove('hidden'); }
         function handleInternalClick() { $('click-overlay').classList.add('hidden'); startTimer(); }
 
+        // --- 1. UPDATE FUNGSI FINISHFARMING (LANJUT OTOMATIS) ---
         async function finishFarming() {
             const btn = $('btn-claim-poin');
-            btn.disabled = true; btn.innerText = "VALIDATING...";
+            btn.disabled = true; 
+            btn.innerText = "VALIDATING...";
             try {
                 const res = await fetch(`${API_URL}/claim`, {
                     method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username: localStorage.getItem('username'), owner: currentWorkingId })
                 });
                 const data = await res.json();
@@ -562,14 +562,31 @@
                     currentPoin += 1;
                     $('poin-display').innerText = currentPoin;
                     localStorage.setItem('userPoin', currentPoin);
-                    alert("Berhasil! Poin +1.");
+                    
+                    // Langsung cari target berikutnya tanpa kembali ke dashboard
+                    btn.innerText = "MENCARI TARGET BERIKUTNYA...";
+                    setTimeout(() => {
+                        startFarmingProcess();
+                    }, 1500); 
+                } else {
+                    alert("Gagal klaim.");
+                    showPhase('phase-dashboard');
                 }
-            } catch (e) { alert("Gagal klaim."); }
-            showPhase('phase-dashboard');
-            refreshCampaignStatus();
+            } catch (e) { 
+                alert("Gagal koneksi."); 
+                showPhase('phase-dashboard');
+            }
         }
 
-        function stopFarming() { if(confirm("Berhenti?")) showPhase('phase-dashboard'); }
+        // --- 2. UPDATE FUNGSI STOPFARMING ---
+        function stopFarming() { 
+            if(confirm("Berhenti farming dan kembali ke Dashboard?")) {
+                clearInterval(timerInterval);
+                showPhase('phase-dashboard'); 
+                refreshCampaignStatus();
+            }
+        }
+
         function claimDailyBonus() {
             currentPoin += 2;
             updateDashboardUI();
@@ -580,27 +597,22 @@
         function copyAffiliateLink() { navigator.clipboard.writeText($('affiliate-link').innerText).then(() => alert("Copied!")); }
 
         setInterval(() => { if(localStorage.getItem('isLoggedIn') === 'true') refreshCampaignStatus(); }, 20000);
-         async function refreshGlobalStats() {
-    try {
-        const res = await fetch(`${API_URL}/status`);
-        const data = await res.json();
         
-        if (data.success) {
-            // Update angka Kampanye Aktif
-            document.querySelector('.glass-card p.text-xl.font-black').innerText = data.onlineUsers;
-            
-            // Update angka Pejuang Online (Kampanye Aktif)
-            // Cari elemen yang berisi teks "Kampanye Aktif"
-            const stats = document.querySelectorAll('.glass-card .text-xl.font-black');
-            if (stats[1]) stats[1].innerText = data.activeCamps;
+        async function refreshGlobalStats() {
+            try {
+                const res = await fetch(`${API_URL}/status`);
+                const data = await res.json();
+                if (data.success) {
+                    const stats = document.querySelectorAll('.glass-card .text-xl.font-black');
+                    if (stats[0]) stats[0].innerText = data.onlineUsers;
+                    if (stats[1]) stats[1].innerText = data.activeCamps;
+                }
+            } catch (e) {
+                console.log("Gagal mengambil statistik global");
+            }
         }
-    } catch (e) {
-        console.log("Gagal mengambil statistik global");
-    }
-}
 
-// Jalankan setiap 30 detik
-setInterval(refreshGlobalStats, 30000);
+        setInterval(refreshGlobalStats, 30000);
     </script>
 </body>
 </html>
