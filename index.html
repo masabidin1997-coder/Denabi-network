@@ -9,6 +9,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
     <style>
+        #btn-claim-poin:not([disabled]) {
+    cursor: pointer !important;
+    pointer-events: auto !important;
+}
         :root {
             --primary-red: #A30000;
             --card-bg: rgba(255, 255, 255, 0.1);
@@ -528,29 +532,32 @@
         }
 
                 function startTimer() {
-            clearInterval(timerInterval);
-            const btnClaim = $('btn-claim-poin');
-            btnClaim.disabled = true;
-            btnClaim.innerText = "Selesaikan Visit Terlebih Dahulu...";
-            btnClaim.className = "w-full py-5 bg-gray-400 text-white rounded-3xl font-black uppercase text-xs opacity-50";
-            
-            timerInterval = setInterval(() => {
-                timeLeft--;
-                $('timer-viewer').innerText = timeLeft;
-                
-                if ([45, 30, 15].includes(timeLeft)) { 
-                    pauseTimerAndShowClick(); 
-                }
-                
-                if (timeLeft <= 0) {
-                    clearInterval(timerInterval);
-                    btnClaim.disabled = false;
-                    btnClaim.innerText = "KLAIM TOKEN SEKARANG (+1)";
-                    // Kita tambahkan z-index tinggi lewat class agar tidak terhalang iframe
-                    btnClaim.className = "w-full py-5 bg-green-600 text-white rounded-3xl font-black uppercase text-xs animate-bounce cursor-pointer shadow-2xl relative z-[300]";
-                }
-            }, 1000);
+    clearInterval(timerInterval);
+    const btnClaim = $('btn-claim-poin');
+    btnClaim.disabled = true;
+    btnClaim.innerText = "Selesaikan Visit Terlebih Dahulu...";
+    btnClaim.className = "w-full py-5 bg-gray-400 text-white rounded-3xl font-black uppercase text-xs opacity-50";
+    
+    timerInterval = setInterval(() => {
+        timeLeft--;
+        $('timer-viewer').innerText = timeLeft;
+        
+        if ([45, 30, 15].includes(timeLeft)) { 
+            pauseTimerAndShowClick(); 
         }
+        
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            // PASTIKAN OVERLAY HILANG SAAT WAKTU HABIS
+            $('click-overlay').classList.add('hidden'); 
+            
+            btnClaim.disabled = false;
+            btnClaim.innerText = "KLAIM TOKEN SEKARANG (+1)";
+            // Kita paksa z-index 999 agar dia berada di paling depan
+            btnClaim.className = "w-full py-5 bg-green-600 text-white rounded-3xl font-black uppercase text-xs animate-bounce cursor-pointer relative z-[999]";
+        }
+    }, 1000);
+}
 
         function pauseTimerAndShowClick() { clearInterval(timerInterval); $('click-overlay').classList.remove('hidden'); }
         function handleInternalClick() { $('click-overlay').classList.add('hidden'); startTimer(); }
