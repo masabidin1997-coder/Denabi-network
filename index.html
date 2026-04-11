@@ -441,7 +441,7 @@ let currentPhase = 'phase-landing';
         window.goToLanding = () => { localStorage.clear(); location.reload(); };
 
         // 3. FUNGSI LOGIN & AUTH
-                        window.onload = function() {
+                                window.onload = function() {
             const savedUser = localStorage.getItem('username');
             const isLoggedIn = localStorage.getItem('isLoggedIn');
 
@@ -452,16 +452,16 @@ let currentPhase = 'phase-landing';
                 
                 // Ambil poin terbaru dari server Cloudflare
                 fetch(`${API_URL}/status?username=${savedUser}`)
-    .then(res => res.json())
-    .then(data => {
-        if (data.poin !== undefined) { // Pakai .poin
-            currentPoin = parseInt(data.poin);
-            $('poin-display').innerText = currentPoin;
-            localStorage.setItem('userPoin', currentPoin);
-        }
-    });
-
-                    .catch(err => console.error("Gagal sinkron database"));
+                    .then(res => res.json())
+                    .then(data => {
+                        // Cek data.poin (sesuai Worker Anda)
+                        if (data.poin !== undefined) {
+                            currentPoin = parseInt(data.poin);
+                            $('poin-display').innerText = currentPoin;
+                            localStorage.setItem('userPoin', currentPoin);
+                        }
+                    })
+                    .catch(err => console.error("Gagal sinkron database:", err));
             } else {
                 $('poin-display').innerText = 0;
             }
