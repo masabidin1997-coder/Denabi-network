@@ -350,10 +350,6 @@
                 <span id="timer-viewer" class="text-2xl font-black">60</span>
                 <span class="text-[8px] font-black">DETIK</span>
             </div>
-            <div class="p-3 bg-yellow-50 text-yellow-800 text-[10px] font-bold text-center italic border-t border-b border-yellow-200 shadow-inner mb-2">
-    <i class="fa-solid fa-circle-info mr-1"></i> 
-    Jika iklan membuka tab baru, silakan kembali ke sini setelah timer selesai untuk klaim poin.
-</div>
             <button onclick="stopFarming()" class="bg-black/20 px-4 py-2 rounded-lg text-[10px] font-black uppercase">STOP</button>
         </div>
         <div class="flex-1 relative bg-white">
@@ -371,10 +367,18 @@
             </div>
         </div>
         <div class="p-6 bg-gray-100 border-t border-gray-200 text-center">
-            <button id="btn-claim-poin" onclick="finishFarming()" disabled class="w-full py-5 bg-gray-300 text-gray-500 rounded-3xl font-black uppercase text-xs tracking-widest transition-all">
-    Selesaikan Visit Terlebih Dahulu...
-</button>
-        </div>
+    
+    <div class="p-3 mb-4 bg-yellow-50 text-yellow-800 text-[10px] font-bold text-center italic border border-yellow-200 rounded-2xl shadow-sm">
+        <i class="fa-solid fa-circle-info mr-1"></i> 
+        Jika iklan membuka tab baru, silakan kembali ke sini setelah timer selesai untuk klaim poin.
+    </div>
+
+    <button id="btn-claim-poin" onclick="finishFarming()" disabled class="w-full py-5 bg-gray-300 text-gray-500 rounded-3xl font-black uppercase text-xs tracking-widest transition-all">
+        Selesaikan Visit Terlebih Dahulu...
+    </button>
+    
+</div>
+
     </div>
 
     <div class="fixed bottom-6 right-6 z-[100]">
