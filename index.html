@@ -656,38 +656,46 @@
 }
 
         async function finishFarming() {
-            const btn = $('btn-claim-poin');
-            btn.disabled = true; 
-            btn.innerText = "VALIDATING...";
-            try {
-                const res = await fetch(`${API_URL}/claim`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        username: localStorage.getItem('username'), 
-                        owner: currentWorkingId 
-                    })
-                });
-                const data = await res.json();
-                if (data.success) {
-                    currentPoin += 1;
-                    $('poin-display').innerText = currentPoin;
-                    localStorage.setItem('userPoin', currentPoin);
-                    
-                    btn.innerText = "MENCARI TARGET BERIKUTNYA...";
-                    setTimeout(() => {
-                        startFarmingProcess();
-                    }, 1500); 
-                } else {
-                    alert("Gagal klaim.");
-                    showPhase('phase-dashboard');
-                }
-            } catch (e) { 
-                alert("Gagal koneksi."); 
-                showPhase('phase-dashboard');
-            }
-        }
+    consasync function finishFarming() {
+    const btn = $('btn-claim-poin');
+    
+    // --- INI BARIS YANG DIMAKSUD ---
+    const username = localStorage.getItem('username'); 
+    // -------------------------------
 
+    btn.disabled = true; 
+    btn.innerText = "VALIDATING...";
+
+    try {
+        const res = await fetch(`${API_URL}/claim`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                username: username, // Mengirim nama hunter ke database
+                owner: currentWorkingId // Pemilik iklan yang dikunjungi
+            })
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+            // Update tampilan poin di layar HP user
+            currentPoin += 1;
+            $('poin-display').innerText = currentPoin;
+            localStorage.setItem('userPoin', currentPoin);
+            
+            btn.innerText = "MENCARI TARGET BERIKUTNYA...";
+            setTimeout(() => {
+                startFarmingProcess();
+            }, 1500); 
+        } else {
+            alert("Gagal klaim poin ke server.");
+            showPhase('phase-dashboard');
+        }
+    } catch (e) { 
+        alert("Koneksi server terputus."); 
+        showPhase('phase-dashboard');
+    }
+}
         function stopFarming() { 
             if(confirm("Berhenti farming dan kembali ke Dashboard?")) {
                 clearInterval(timerInterval);
