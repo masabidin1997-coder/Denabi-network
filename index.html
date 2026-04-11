@@ -441,29 +441,32 @@ let currentPhase = 'phase-landing';
         window.goToLanding = () => { localStorage.clear(); location.reload(); };
 
         // 3. FUNGSI LOGIN & AUTH
-                                window.onload = function() {
+                                        window.onload = function() {
             const savedUser = localStorage.getItem('username');
             const isLoggedIn = localStorage.getItem('isLoggedIn');
 
             if (isLoggedIn === 'true' && savedUser) {
-                $('user-display').innerText = savedUser.toUpperCase();
+                // Gunakan $ agar lebih singkat sesuai fungsi yang sudah Anda buat
+                if($('user-display')) $('user-display').innerText = savedUser.toUpperCase();
                 showPhase('phase-dashboard');
                 refreshCampaignStatus();
                 
-                // Ambil poin terbaru dari server Cloudflare
+                // Proses ambil poin (Fetch)
                 fetch(`${API_URL}/status?username=${savedUser}`)
                     .then(res => res.json())
                     .then(data => {
-                        // Cek data.poin (sesuai Worker Anda)
+                        // Pastikan pakai data.poin agar sinkron dengan Worker
                         if (data.poin !== undefined) {
                             currentPoin = parseInt(data.poin);
-                            $('poin-display').innerText = currentPoin;
+                            if($('poin-display')) $('poin-display').innerText = currentPoin;
                             localStorage.setItem('userPoin', currentPoin);
                         }
-                    })
-                    .catch(err => console.error("Gagal sinkron database:", err));
+                    }) // DI SINI JANGAN KASIH TITIK KOMA (;)
+                    .catch(err => {
+                        console.error("Gagal sinkron database:", err);
+                    }); 
             } else {
-                $('poin-display').innerText = 0;
+                if($('poin-display')) $('poin-display').innerText = 0;
             }
         };
 
