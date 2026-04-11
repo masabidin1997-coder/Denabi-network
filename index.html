@@ -411,7 +411,7 @@
     </div>
 
      <script>
-        // 1. DEKLARASI VARIABEL (Bagian Utama)
+               // 1. DEKLARASI VARIABEL (Bagian Utama)
         const API_URL = "https://denabiapp.masabidin97.workers.dev";
         const $ = (id) => document.getElementById(id);
 
@@ -421,9 +421,10 @@
         let currentWorkingId = null;
         let currentPhase = 'phase-landing';
 
-        // 2. FUNGSI NAVIGASI (Pindah Halaman)
-        function showPhase(id) {
-            ['phase-landing', 'phase-login', 'phase-dashboard', 'phase-viewer'].forEach(p => {
+        // 2. FUNGSI NAVIGASI GLOBAL
+        window.showPhase = function(id) {
+            const phases = ['phase-landing', 'phase-login', 'phase-dashboard', 'phase-viewer'];
+            phases.forEach(p => {
                 const el = $(p);
                 if (el) el.classList.add('hidden');
             });
@@ -431,132 +432,123 @@
             if (target) {
                 target.classList.remove('hidden');
                 currentPhase = id;
-            }
-        }
-
-        // 3. FUNGSI LOGIN & AUTH
-        window.onload = function() {
-            $('poin-display').innerText = currentPoin;
-            if (localStorage.getItem('isLoggedIn') === 'true') {
-                $('user-display').innerText = (localStorage.getItem('username') || 'ELITE').toUpperCase();
-                showPhase('phase-dashboard');
-                refreshCampaignStatus();
+                window.scrollTo(0,0);
             }
         };
 
-        function goToLogin() { showPhase('phase-login'); }
-        function goToLanding() { localStorage.clear(); location.reload(); }
+        window.goToLogin = () => showPhase('phase-login');
+        window.goToLanding = () => { localStorage.clear(); location.reload(); };
 
-                function toggleAuth(type) {
+        // 3. FUNGSI LOGIN & AUTH
+        window.onload = function() {
+            const savedUser = localStorage.getItem('username');
+            if (localStorage.getItem('isLoggedIn') === 'true' && savedUser) {
+                $('user-display').innerText = savedUser.toUpperCase();
+                showPhase('phase-dashboard');
+                refreshCampaignStatus();
+                
+                // Ambil poin terbaru dari server agar sinkron lintas perangkat
+                fetch(`${API_URL}/status?username=${savedUser}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        const serverPoin = data.poin || data.points;
+                        if(serverPoin !== undefined) {
+                            currentPoin = parseInt(serverPoin);
+                            updateDashboardUI();
+                        }
+                    }).catch(e => console.log("Sync failed"));
+            } else {
+                $('poin-display').innerText = currentPoin;
+            }
+        };
+
+        function toggleAuth(type) {
             const isSignUp = type === 'signup';
-            
-            // Reset input saat pindah tab
             $('input-username').value = "";
             document.querySelectorAll('input[type="password"]').forEach(input => input.value = "");
-
-            $('tab-signup').classList.toggle('opacity-40', !isSignUp);
-            $('tab-signup').classList.toggle('border-b-2', isSignUp);
-            $('tab-signin').classList.toggle('opacity-40', isSignUp);
-            $('tab-signin').classList.toggle('border-b-2', !isSignUp);
+            $('tab-signup').className = `text-sm font-black uppercase tracking-widest ${isSignUp ? 'border-b-2 border-white pb-2' : 'opacity-40 pb-2'} transition-all`;
+            $('tab-signin').className = `text-sm font-black uppercase tracking-widest ${!isSignUp ? 'border-b-2 border-white pb-2' : 'opacity-40 pb-2'} transition-all`;
             $('box-confirm').classList.toggle('hidden', !isSignUp);
-            
             $('btn-auth').innerText = isSignUp ? "DAFTAR SEKARANG" : "AUTHORIZE ACCESS";
         }
 
-                // DATABASE LOKAL SEDERHANA
-        function handleAuthSubmit(e) {
+        async function handleAuthSubmit(e) {
             e.preventDefault();
-            
-            const username = $('input-username').value.trim();
-            const password = document.querySelectorAll('input[type="password"]')[0].value;
-            const confirmPass = document.querySelectorAll('input[type="password"]')[1].value;
+            const username = $('input-username').value.trim().toLowerCase();
+            const passwordInputs = document.querySelectorAll('input[type="password"]');
+            const password = passwordInputs[0].value;
+            const confirmPass = passwordInputs[1] ? passwordInputs[1].value : null;
             const isSignUp = !$('box-confirm').classList.contains('hidden');
 
-            if (!username || !password) {
-                return alert("Harap isi username dan password!");
-            }
+            if (!username || !password) return alert("Harap isi username dan password!");
 
-            if (isSignUp) {
-                // ALUR PENDAFTARAN (SIGN UP)
-                if (password !== confirmPass) {
-                    return alert("Konfirmasi password tidak cocok!");
-                }
-                
-                // Simpan data ke localStorage
-                localStorage.setItem(`user_${username}`, password);
-                alert("✅ Registrasi Sukses! Silakan Login dengan akun Anda.");
-                
-                // Kembalikan ke tampilan Sign In
-                toggleAuth('signin');
-                $('input-username').value = username; // isi otomatis username tadi
-            } else {
-                // ALUR MASUK (SIGN IN)
-                const savedPassword = localStorage.getItem(`user_${username}`);
-                
-                if (savedPassword && savedPassword === password) {
-                    // Login Berhasil
-                    localStorage.setItem('isLoggedIn', 'true');
-                    localStorage.setItem('username', username);
-                    localStorage.setItem('userPoin', currentPoin);
-                    
-                    $('user-display').innerText = username.toUpperCase();
-                    showPhase('phase-dashboard');
+            const btn = $('btn-auth');
+            btn.disabled = true; btn.innerText = "PROCESSING...";
+
+            try {
+                const endpoint = isSignUp ? "/register" : "/login";
+                if (isSignUp && password !== confirmPass) throw new Error("Password tidak cocok!");
+
+                const res = await fetch(`${API_URL}${endpoint}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    if (isSignUp) {
+                        alert("✅ Registrasi Sukses! Silakan Login.");
+                        toggleAuth('signin');
+                    } else {
+                        localStorage.setItem('isLoggedIn', 'true');
+                        localStorage.setItem('username', username);
+                        localStorage.setItem('userPoin', data.poin);
+                        currentPoin = parseInt(data.poin);
+                        $('user-display').innerText = username.toUpperCase();
+                        updateDashboardUI();
+                        showPhase('phase-dashboard');
+                    }
                 } else {
-                    // Login Gagal
-                    alert("❌ Username atau Password salah! Silakan daftar jika belum punya akun.");
+                    alert("❌ " + (data.msg || "Gagal!"));
                 }
-            }
+            } catch (err) { alert(err.message); }
+            finally { btn.disabled = false; btn.innerText = isSignUp ? "DAFTAR SEKARANG" : "AUTHORIZE ACCESS"; }
         }
 
         // 4. FUNGSI DASHBOARD (Deploy & Monitor)
         async function handleDeployCampaign() {
-    const targetWeb = $('target-web').value;
-    const adLink1 = $('ad-link-1').value;
-    const viewValue = parseInt($('view-range').value); 
-    const username = localStorage.getItem('username') || "Member";
+            const targetWeb = $('target-web').value;
+            const adLink1 = $('ad-link-1').value;
+            const viewValue = parseInt($('view-range').value); 
+            const username = localStorage.getItem('username');
 
-    if (!targetWeb || !adLink1) return alert("Harap isi semua kolom!");
-    if (currentPoin < viewValue) return alert("Poin Anda tidak cukup!");
+            if (!targetWeb || !adLink1) return alert("Harap isi semua kolom!");
+            if (currentPoin < viewValue) return alert("Poin Anda tidak cukup!");
 
-    if (confirm("Gunakan " + viewValue + " Poin untuk deploy?")) {
-        const btn = document.querySelector('button[onclick="handleDeployCampaign()"]');
-        btn.disabled = true;
-        btn.innerText = "DEPLOYING...";
+            if (confirm(`Gunakan ${viewValue} Poin untuk deploy?`)) {
+                const btn = document.querySelector('button[onclick="handleDeployCampaign()"]');
+                btn.disabled = true; btn.innerText = "DEPLOYING...";
 
-        try {
-            const res = await fetch(`${API_URL}/deploy`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    username: username,
-                    url: targetWeb,
-                    ad1: adLink1,
-                    target: viewValue
-                })
-            });
-
-            const data = await res.json();
-
-            if (data.success) {
-                currentPoin -= viewValue;
-                $('poin-display').innerText = currentPoin;
-                localStorage.setItem('userPoin', currentPoin);
-                
-                // Aktifkan monitor progres
-                $('campaign-monitor').classList.remove('hidden');
-                alert("🚀 KAMPANYE BERHASIL DIDEPLOY!");
-                refreshCampaignStatus(); 
-            } else {
-                alert("Gagal: " + (data.msg || "Terjadi kesalahan"));
+                try {
+                    const res = await fetch(`${API_URL}/deploy`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username, url: targetWeb, ad1: adLink1, target: viewValue })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        currentPoin -= viewValue;
+                        updateDashboardUI();
+                        $('campaign-monitor').classList.remove('hidden');
+                        alert("🚀 KAMPANYE BERHASIL DIDEPLOY!");
+                        refreshCampaignStatus(); 
+                    } else { alert("Gagal: " + data.msg); }
+                } catch (e) { alert("Koneksi gagal."); }
+                finally { btn.disabled = false; btn.innerText = "Deploy Campaign"; }
             }
-        } catch (e) {
-            alert("Koneksi ke Cloudflare gagal. Cek API_URL Anda.");
-        } finally {
-            btn.disabled = false;
-            btn.innerText = "Deploy Campaign";
         }
-    }
-}
+
         async function refreshCampaignStatus() {
             const username = localStorage.getItem('username');
             if (!username || currentPhase !== 'phase-dashboard') return;
@@ -574,134 +566,73 @@
         }
 
         // 5. FUNGSI FARMING (Cari Poin)
-                                 async function startFarmingProcess() {
-    try {
-        const res = await fetch(`${API_URL}/status`); 
-        if (!res.ok) throw new Error("Server Error");
-        const data = await res.json();
-
-        if (data.success && data.campaign) {
-            currentWorkingId = data.campaign.username; 
-            showPhase('phase-viewer'); 
-            
-            const targetUrl = data.campaign.url;
-            const frame = $('ads-frame');
-
-            // --- SINYAL DARI KODE LAMA ---
-            // Hapus atribut srcdoc jika ada (ini rahasia agar iframe tidak blank)
-            frame.removeAttribute("srcdoc");
-            // Reset ke blank agar browser siap menerima link baru
-            frame.src = "about:blank";
-
-            setTimeout(() => {
-                // Tembak link asli tanpa proxy (agar Adsterra tidak blokir)
-                frame.src = targetUrl;
-            }, 200);
-            // -----------------------------
-
+        async function startFarmingProcess() {
             try {
-                const domain = new URL(targetUrl).hostname;
-                $('view-target-name').innerText = domain.toUpperCase();
-            } catch(e) {
-                $('view-target-name').innerText = "ACTIVE NODE";
-            }
-            
-            timeLeft = 60;
-            $('timer-viewer').innerText = timeLeft;
-            startTimer();
-        } else {
-            alert("📭 Belum ada kampanye aktif.");
+                const res = await fetch(`${API_URL}/status`); 
+                const data = await res.json();
+                if (data.success && data.campaign) {
+                    currentWorkingId = data.campaign.username; 
+                    showPhase('phase-viewer'); 
+                    const frame = $('ads-frame');
+                    frame.removeAttribute("srcdoc");
+                    frame.src = "about:blank";
+                    setTimeout(() => { frame.src = data.campaign.url; }, 200);
+
+                    try { $('view-target-name').innerText = new URL(data.campaign.url).hostname.toUpperCase(); } 
+                    catch(e) { $('view-target-name').innerText = "ACTIVE NODE"; }
+                    
+                    timeLeft = 60;
+                    $('timer-viewer').innerText = timeLeft;
+                    startTimer();
+                } else { alert("📭 Belum ada kampanye aktif."); }
+            } catch (e) { alert("Gagal terhubung ke Network."); }
         }
-    } catch (e) {
-        alert("Gagal terhubung ke Network.");
-    }
-}
-                function startTimer() {
-    clearInterval(timerInterval);
-    const btnClaim = $('btn-claim-poin');
-    btnClaim.disabled = true;
-    btnClaim.innerText = "Selesaikan Visit Terlebih Dahulu...";
-    btnClaim.className = "w-full py-5 bg-gray-400 text-white rounded-3xl font-black uppercase text-xs opacity-50";
-    
-    timerInterval = setInterval(() => {
-        timeLeft--;
-        $('timer-viewer').innerText = timeLeft;
-        
-        if ([45, 30, 15].includes(timeLeft)) { 
-            pauseTimerAndShowClick(); 
-        }
-        
-        if (timeLeft <= 0) {
+
+        function startTimer() {
             clearInterval(timerInterval);
-            // PASTIKAN OVERLAY HILANG SAAT WAKTU HABIS
-            $('click-overlay').classList.add('hidden'); 
+            const btnClaim = $('btn-claim-poin');
+            btnClaim.disabled = true;
+            btnClaim.innerText = "Selesaikan Visit Terlebih Dahulu...";
+            btnClaim.className = "w-full py-5 bg-gray-400 text-white rounded-3xl font-black uppercase text-xs opacity-50";
             
-            btnClaim.disabled = false;
-            btnClaim.innerText = "KLAIM TOKEN SEKARANG (+1)";
-            // Kita paksa z-index 999 agar dia berada di paling depan
-            btnClaim.className = "w-full py-5 bg-green-600 text-white rounded-3xl font-black uppercase text-xs animate-bounce cursor-pointer relative z-[999]";
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                $('timer-viewer').innerText = timeLeft;
+                if ([45, 30, 15].includes(timeLeft)) { pauseTimerAndShowClick(); }
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    $('click-overlay').classList.add('hidden'); 
+                    btnClaim.disabled = false;
+                    btnClaim.innerText = "KLAIM TOKEN SEKARANG (+1)";
+                    btnClaim.className = "w-full py-5 bg-green-600 text-white rounded-3xl font-black uppercase text-xs animate-bounce cursor-pointer relative z-[999]";
+                }
+            }, 1000);
         }
-    }, 1000);
-}
 
         function pauseTimerAndShowClick() { clearInterval(timerInterval); $('click-overlay').classList.remove('hidden'); }
-        function handleInternalClick() { 
-    $('click-overlay').classList.add('hidden'); 
-    
-    // Paksa browser memberikan fokus ke Iframe agar skrip iklan aktif
-    const frame = $('ads-frame');
-    frame.focus();
-    
-    startTimer(); 
-}
+        function handleInternalClick() { $('click-overlay').classList.add('hidden'); $('ads-frame').focus(); startTimer(); }
 
         async function finishFarming() {
-    consasync function finishFarming() {
-    const btn = $('btn-claim-poin');
-    
-    // --- INI BARIS YANG DIMAKSUD ---
-    const username = localStorage.getItem('username'); 
-    // -------------------------------
-
-    btn.disabled = true; 
-    btn.innerText = "VALIDATING...";
-
-    try {
-        const res = await fetch(`${API_URL}/claim`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                username: username, // Mengirim nama hunter ke database
-                owner: currentWorkingId // Pemilik iklan yang dikunjungi
-            })
-        });
-        const data = await res.json();
-        
-        if (data.success) {
-            // Update tampilan poin di layar HP user
-            currentPoin += 1;
-            $('poin-display').innerText = currentPoin;
-            localStorage.setItem('userPoin', currentPoin);
-            
-            btn.innerText = "MENCARI TARGET BERIKUTNYA...";
-            setTimeout(() => {
-                startFarmingProcess();
-            }, 1500); 
-        } else {
-            alert("Gagal klaim poin ke server.");
-            showPhase('phase-dashboard');
+            const btn = $('btn-claim-poin');
+            btn.disabled = true; btn.innerText = "VALIDATING...";
+            try {
+                const res = await fetch(`${API_URL}/claim`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: localStorage.getItem('username'), owner: currentWorkingId })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    currentPoin += 1;
+                    updateDashboardUI();
+                    btn.innerText = "MENCARI TARGET BERIKUTNYA...";
+                    setTimeout(() => { startFarmingProcess(); }, 1500); 
+                } else { alert("Gagal klaim."); showPhase('phase-dashboard'); }
+            } catch (e) { alert("Gagal koneksi."); showPhase('phase-dashboard'); }
         }
-    } catch (e) { 
-        alert("Koneksi server terputus."); 
-        showPhase('phase-dashboard');
-    }
-}
+
         function stopFarming() { 
-            if(confirm("Berhenti farming dan kembali ke Dashboard?")) {
-                clearInterval(timerInterval);
-                showPhase('phase-dashboard'); 
-                refreshCampaignStatus();
-            }
+            if(confirm("Berhenti farming?")) { clearInterval(timerInterval); showPhase('phase-dashboard'); refreshCampaignStatus(); }
         }
 
         function claimDailyBonus() {
@@ -720,6 +651,7 @@
             navigator.clipboard.writeText($('affiliate-link').innerText).then(() => alert("Copied!")); 
         }
 
+        // 6. INTERVAL & STATISTIK REAL-TIME
         setInterval(() => { 
             if(localStorage.getItem('isLoggedIn') === 'true' && currentPhase === 'phase-dashboard') refreshCampaignStatus(); 
         }, 20000);
@@ -730,15 +662,11 @@
                 const data = await res.json();
                 if (data.success) {
                     const stats = document.querySelectorAll('.glass-card .text-xl.font-black');
-                    // stats[0] adalah Pejuang Online, stats[1] adalah Kampanye Aktif
                     if (stats[0]) stats[0].innerText = data.onlineUsers;
                     if (stats[1]) stats[1].innerText = data.activeCamps;
                 }
-            } catch (e) {
-                console.log("Gagal mengambil statistik global");
-            }
+            } catch (e) {}
         }
-
         setInterval(refreshGlobalStats, 30000);
 
     </script>
