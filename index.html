@@ -415,7 +415,7 @@
         const API_URL = "https://denabiapp.masabidin97.workers.dev";
         const $ = (id) => document.getElementById(id);
 
-        let currentPoin = parseInt(localStorage.getItem('userPoin')) || 9;
+        let currentPoin = parseInt(localStorage.getItem('userPoin')) || 0;
         let timeLeft = 60;
         let timerInterval;
         let currentWorkingId = null;
@@ -441,26 +441,26 @@
 
         // 3. FUNGSI LOGIN & AUTH
         window.onload = function() {
-            const savedUser = localStorage.getItem('username');
-            if (localStorage.getItem('isLoggedIn') === 'true' && savedUser) {
-                $('user-display').innerText = savedUser.toUpperCase();
-                showPhase('phase-dashboard');
-                refreshCampaignStatus();
-                
-                // Ambil poin terbaru dari server agar sinkron lintas perangkat
-                fetch(`${API_URL}/status?username=${savedUser}`)
-                    .then(res => res.json())
-                    .then(data => {
-                        const serverPoin = data.poin || data.points;
-                        if(serverPoin !== undefined) {
-                            currentPoin = parseInt(serverPoin);
-                            updateDashboardUI();
-                        }
-                    }).catch(e => console.log("Sync failed"));
-            } else {
-                $('poin-display').innerText = currentPoin;
-            }
-        };
+    const savedUser = localStorage.getItem('username');
+    if (localStorage.getItem('isLoggedIn') === 'true' && savedUser) {
+        $('user-display').innerText = savedUser.toUpperCase();
+        showPhase('phase-dashboard');
+        refreshCampaignStatus();
+        
+        fetch(`${API_URL}/status?username=${savedUser}`)
+            .then(res => res.json())
+            .then(data => {
+                const serverPoin = data.poin || data.points;
+                if(serverPoin !== undefined) {
+                    // INI KUNCINYA: Paksa variabel mengikuti server
+                    currentPoin = parseInt(serverPoin); 
+                    updateDashboardUI();
+                }
+            });
+    } else {
+        $('poin-display').innerText = currentPoin;
+    }
+};
 
         function toggleAuth(type) {
             const isSignUp = type === 'signup';
