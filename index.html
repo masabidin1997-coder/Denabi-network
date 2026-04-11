@@ -357,7 +357,9 @@
             </div>
         </div>
         <div class="p-6 bg-gray-100 border-t border-gray-200 text-center">
-            <button id="btn-claim-poin" disabled class="w-full py-5 bg-gray-300 text-gray-500 rounded-3xl font-black uppercase text-xs tracking-widest transition-all">Selesaikan Visit Terlebih Dahulu...</button>
+            <button id="btn-claim-poin" onclick="finishFarming()" disabled class="w-full py-5 bg-gray-300 text-gray-500 rounded-3xl font-black uppercase text-xs tracking-widest transition-all">
+    Selesaikan Visit Terlebih Dahulu...
+</button>
         </div>
     </div>
 
@@ -490,7 +492,7 @@
         }
 
         // 5. FUNGSI FARMING (Cari Poin)
-                async function startFarmingProcess() {
+                         async function startFarmingProcess() {
             try {
                 const res = await fetch(`${API_URL}/status`); 
                 if (!res.ok) throw new Error("Server Cloudflare bermasalah");
@@ -507,7 +509,6 @@
                     
                     // --- PERBAIKAN MEMBER NODE ---
                     try {
-                        // Mengambil domain (misal: google.com) agar tulisan Member Node berubah otomatis
                         const domain = new URL(data.campaign.url).hostname;
                         $('view-target-name').innerText = domain.toUpperCase();
                     } catch(e) {
@@ -530,6 +531,9 @@
             clearInterval(timerInterval);
             $('btn-claim-poin').disabled = true;
             $('btn-claim-poin').innerText = "Selesaikan Visit Terlebih Dahulu...";
+            // Reset warna tombol ke abu-abu saat timer mulai ulang
+            $('btn-claim-poin').className = "w-full py-5 bg-gray-300 text-gray-500 rounded-3xl font-black uppercase text-xs";
+            
             timerInterval = setInterval(() => {
                 timeLeft--;
                 $('timer-viewer').innerText = timeLeft;
@@ -538,7 +542,8 @@
                     clearInterval(timerInterval);
                     $('btn-claim-poin').disabled = false;
                     $('btn-claim-poin').innerText = "KLAIM TOKEN SEKARANG (+1)";
-                    $('btn-claim-poin').className = "w-full py-5 bg-green-600 text-white rounded-3xl font-black uppercase text-xs animate-bounce";
+                    // Tambahkan cursor-pointer agar bisa diklik di HP
+                    $('btn-claim-poin').className = "w-full py-5 bg-green-600 text-white rounded-3xl font-black uppercase text-xs animate-bounce cursor-pointer";
                 }
             }, 1000);
         }
@@ -546,7 +551,6 @@
         function pauseTimerAndShowClick() { clearInterval(timerInterval); $('click-overlay').classList.remove('hidden'); }
         function handleInternalClick() { $('click-overlay').classList.add('hidden'); startTimer(); }
 
-        // --- 1. UPDATE FUNGSI FINISHFARMING (LANJUT OTOMATIS) ---
         async function finishFarming() {
             const btn = $('btn-claim-poin');
             btn.disabled = true; 
@@ -555,7 +559,10 @@
                 const res = await fetch(`${API_URL}/claim`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username: localStorage.getItem('username'), owner: currentWorkingId })
+                    body: JSON.stringify({ 
+                        username: localStorage.getItem('username'), 
+                        owner: currentWorkingId 
+                    })
                 });
                 const data = await res.json();
                 if (data.success) {
@@ -563,7 +570,6 @@
                     $('poin-display').innerText = currentPoin;
                     localStorage.setItem('userPoin', currentPoin);
                     
-                    // Langsung cari target berikutnya tanpa kembali ke dashboard
                     btn.innerText = "MENCARI TARGET BERIKUTNYA...";
                     setTimeout(() => {
                         startFarmingProcess();
@@ -578,7 +584,6 @@
             }
         }
 
-        // --- 2. UPDATE FUNGSI STOPFARMING ---
         function stopFarming() { 
             if(confirm("Berhenti farming dan kembali ke Dashboard?")) {
                 clearInterval(timerInterval);
@@ -593,10 +598,19 @@
             $('btn-claim-daily').disabled = true;
             alert("Bonus harian +2 ditambahkan!");
         }
-        function updateDashboardUI() { $('poin-display').innerText = currentPoin; localStorage.setItem('userPoin', currentPoin); }
-        function copyAffiliateLink() { navigator.clipboard.writeText($('affiliate-link').innerText).then(() => alert("Copied!")); }
 
-        setInterval(() => { if(localStorage.getItem('isLoggedIn') === 'true') refreshCampaignStatus(); }, 20000);
+        function updateDashboardUI() { 
+            $('poin-display').innerText = currentPoin; 
+            localStorage.setItem('userPoin', currentPoin); 
+        }
+
+        function copyAffiliateLink() { 
+            navigator.clipboard.writeText($('affiliate-link').innerText).then(() => alert("Copied!")); 
+        }
+
+        setInterval(() => { 
+            if(localStorage.getItem('isLoggedIn') === 'true' && currentPhase === 'phase-dashboard') refreshCampaignStatus(); 
+        }, 20000);
         
         async function refreshGlobalStats() {
             try {
@@ -604,6 +618,7 @@
                 const data = await res.json();
                 if (data.success) {
                     const stats = document.querySelectorAll('.glass-card .text-xl.font-black');
+                    // stats[0] adalah Pejuang Online, stats[1] adalah Kampanye Aktif
                     if (stats[0]) stats[0].innerText = data.onlineUsers;
                     if (stats[1]) stats[1].innerText = data.activeCamps;
                 }
@@ -613,6 +628,7 @@
         }
 
         setInterval(refreshGlobalStats, 30000);
+
     </script>
 </body>
 </html>
