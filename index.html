@@ -356,8 +356,9 @@
             <iframe 
     id="ads-frame" 
     src="about:blank" 
-    class="w-full h-full border-none"
-    allow="autoplay; clipboard-write; encrypted-media; picture-in-picture"
+    class="w-full h-full border-none" 
+    allow="autoplay; fullscreen; clipboard-read; clipboard-write; payment" 
+    sandbox="allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-top-navigation-by-user-activation"
 ></iframe>
             <div id="click-overlay" class="click-overlay hidden" onclick="handleInternalClick()">
                 <div class="float mb-4"><i class="fa-solid fa-hand-pointer text-6xl"></i></div>
@@ -502,47 +503,47 @@
 
         // 5. FUNGSI FARMING (Cari Poin)
                                  async function startFarmingProcess() {
+    try {
+        const res = await fetch(`${API_URL}/status`); 
+        if (!res.ok) throw new Error("Server Error");
+        const data = await res.json();
+
+        if (data.success && data.campaign) {
+            currentWorkingId = data.campaign.username; 
+            showPhase('phase-viewer'); 
+            
+            const targetUrl = data.campaign.url;
+            const frame = $('ads-frame');
+
+            // --- SINYAL DARI KODE LAMA ---
+            // Hapus atribut srcdoc jika ada (ini rahasia agar iframe tidak blank)
+            frame.removeAttribute("srcdoc");
+            // Reset ke blank agar browser siap menerima link baru
+            frame.src = "about:blank";
+
+            setTimeout(() => {
+                // Tembak link asli tanpa proxy (agar Adsterra tidak blokir)
+                frame.src = targetUrl;
+            }, 200);
+            // -----------------------------
+
             try {
-                const res = await fetch(`${API_URL}/status`); 
-                if (!res.ok) throw new Error("Server Cloudflare bermasalah");
-
-                const data = await res.json();
-
-                if (data.success && data.campaign) {
-                    currentWorkingId = data.campaign.username; 
-
-                    showPhase('phase-viewer'); 
-                    
-                    // --- BAGIAN YANG DIGANTI/DITAMBAHKAN ---
-                    const targetUrl = data.campaign.url;
-
-                    // Step 1: Kosongkan frame dulu agar bersih
-                    $('ads-frame').src = "about:blank";
-
-                    // Step 2: Beri jeda 200ms baru masukkan link asli
-                    setTimeout(() => {
-                        $('ads-frame').src = targetUrl;
-                    }, 200);
-                    // --- SELESAI BAGIAN PERBAIKAN ---
-
-                    try {
-                        const domain = new URL(targetUrl).hostname;
-                        $('view-target-name').innerText = domain.toUpperCase();
-                    } catch(e) {
-                        $('view-target-name').innerText = "ACTIVE NODE";
-                    }
-                    
-                    timeLeft = 60;
-                    $('timer-viewer').innerText = timeLeft;
-                    startTimer();
-                } else {
-                    alert("📭 Belum ada kampanye aktif dari member lain. Jadilah yang pertama deploy!");
-                }
-            } catch (e) {
-                console.error("Error Detail:", e);
-                alert("Gagal terhubung ke Network.");
+                const domain = new URL(targetUrl).hostname;
+                $('view-target-name').innerText = domain.toUpperCase();
+            } catch(e) {
+                $('view-target-name').innerText = "ACTIVE NODE";
             }
+            
+            timeLeft = 60;
+            $('timer-viewer').innerText = timeLeft;
+            startTimer();
+        } else {
+            alert("📭 Belum ada kampanye aktif.");
         }
+    } catch (e) {
+        alert("Gagal terhubung ke Network.");
+    }
+}
                 function startTimer() {
     clearInterval(timerInterval);
     const btnClaim = $('btn-claim-poin');
@@ -575,10 +576,9 @@
         function handleInternalClick() { 
     $('click-overlay').classList.add('hidden'); 
     
-    // Jika frame masih putih/kosong saat di-klik, tembak ulang linknya
-    if ($('ads-frame').src === "about:blank") {
-        startFarmingProcess(); // Panggil ulang proses ambil data
-    }
+    // Paksa browser memberikan fokus ke Iframe agar skrip iklan aktif
+    const frame = $('ads-frame');
+    frame.focus();
     
     startTimer(); 
 }
