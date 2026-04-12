@@ -178,7 +178,7 @@
                 <div>
                     <p class="text-[9px] font-bold opacity-50 uppercase tracking-widest mb-1">Global Network</p>
                     <div class="flex items-baseline gap-2">
-                        <span id="member-count" class="text-5xl font-black italic">250+</span>
+                        <span id="total-member-display" class="text-5xl font-black italic">100+</span>
                         <span class="text-[10px] font-bold opacity-60 uppercase">Member</span>
                     </div>
                 </div>
@@ -267,7 +267,7 @@
             <div class="glass-card p-5 border-b-4 border-white flex items-center justify-center gap-3">
                 <span class="w-2 h-2 bg-green-500 rounded-full dot-blink"></span>
                 <div class="text-center">
-                    <p class="text-xl font-black italic text-white" id="online-users-display">124</p>
+                    <p class="text-xl font-black italic text-white" id="online-users-display">30</p>
                     <p class="text-[8px] font-bold opacity-50 uppercase text-white">Pejuang Online</p>
                 </div>
             </div>
@@ -533,7 +533,6 @@
         };
 
         window.handleDeployCampaign = async function() {
-            // MODIFIKASI: Link dari satu input akan mengisi semua kolom target backend
             const directLink = $('target-web').value.trim();
             const viewValue = parseInt($('view-range').value); 
             const username = localStorage.getItem('username');
@@ -557,7 +556,7 @@
                             username, 
                             amount: -viewValue, 
                             campaignUrl: directLink, 
-                            adLink1: directLink, // Iklan 1 sama dengan Link Utama
+                            adLink1: directLink, 
                             adLink2: null,
                             target: viewValue 
                         })
@@ -702,10 +701,22 @@
                 const res = await fetch(`${API_URL}/get-stats`);
                 const data = await res.json();
                 if (data.success) {
-                    if ($('online-users-display')) $('online-users-display').innerText = (data.total || 0) + 124;
-                    if ($('active-camps-display')) $('active-camps-display').innerText = data.activeCamps || 0;
+                    // Update Landing Page: Total Member (Asli + 100)
+                    if ($('total-member-display')) {
+                        $('total-member-display').innerText = ((data.total || 0) + 100) + "+";
+                    }
+                    // Update Dashboard: Pejuang Online (Asli + 30)
+                    if ($('online-users-display')) {
+                        $('online-users-display').innerText = (data.total || 0) + 30;
+                    }
+                    // Active Campaigns tetap asli
+                    if ($('active-camps-display')) {
+                        $('active-camps-display').innerText = data.activeCamps || 0;
+                    }
                 }
-            } catch (e) {}
+            } catch (e) {
+                console.log("Stats error");
+            }
         }
 
         setInterval(() => { 
