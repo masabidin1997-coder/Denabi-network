@@ -321,11 +321,11 @@
                 <input type="text" id="target-web" placeholder="MASUKKAN LINK DIRECTLINK ADSTERRA" class="w-full p-5 rounded-3xl bg-white/10 border border-white/20 outline-none text-sm font-bold text-white uppercase placeholder:text-white/40">
                 
                 <div class="flex justify-between items-center pt-4 text-white">
-                    <span class="text-[10px] font-black uppercase italic opacity-60">Target View</span>
-                    <span class="text-xl font-black italic" id="view-val">10 View</span>
-                </div>
-                
-                <input type="range" id="view-range" min="10" max="1000" step="10" value="10" oninput="document.getElementById('view-val').innerText = this.value + ' View'">
+    <span class="text-[10px] font-black uppercase italic opacity-60">Target View</span>
+    <span class="text-xl font-black italic" id="view-val">1 View</span>
+</div>
+
+<input type="range" id="view-range" min="1" max="1000" step="1" value="1" oninput="document.getElementById('view-val').innerText = this.value + ' View'">
                 
                 <button onclick="handleDeployCampaign()" class="bg-white text-red-900 w-full py-6 mt-4 text-[11px] font-black uppercase rounded-full shadow-2xl active:scale-95 transition">
                     Deploy Campaign
