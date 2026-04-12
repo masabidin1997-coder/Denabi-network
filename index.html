@@ -14,6 +14,8 @@
         }
         :root {
             --primary-red: #A30000;
+            --primary-dark: #800000;
+            --accent-gold: #EAB308;
             --card-bg: rgba(255, 255, 255, 0.1);
         }
 
@@ -23,13 +25,26 @@
             color: #ffffff;
             margin: 0;
             overflow-x: hidden;
+            transition: background-color 0.5s ease;
+        }
+
+        /* MATRIX RED BACKGROUND */
+        #matrix-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.15;
+            pointer-events: none;
         }
 
         .glass-card {
             background: var(--card-bg);
             backdrop-filter: blur(15px);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 40px;
+            border-radius: 30px;
         }
 
         .login-card {
@@ -104,9 +119,160 @@
             box-sizing: border-box;
         }
         .click-overlay { position: absolute; inset: 0; background: rgba(163, 0, 0, 0.8); backdrop-filter: blur(8px); z-index: 210; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: white; cursor: pointer; }
+
+        /* Notification Styles */
+        #live-notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            z-index: 1000;
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        #live-notification.show { transform: translateX(-50%) translateY(0); }
+
+        /* Counter Animation */
+        .count-up { transition: all 0.5s ease-out; }
+
+        /* Dark Mode Override */
+        body.dark-mode { background-color: #1a1a1a; }
+        .dark-mode .btn-white { color: #1a1a1a; }
+
+        /* Sparkline Decoration */
+        .sparkline {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 30px;
+            opacity: 0.2;
+            pointer-events: none;
+        }
+
+        /* LUCKY SPIN WHEEL */
+        .wheel-container {
+            position: relative;
+            width: 260px;
+            height: 260px;
+            margin: 0 auto;
+        }
+        #wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 5px solid white;
+            position: relative;
+            overflow: hidden;
+            transition: transform 4s cubic-bezier(0.15, 0, 0.15, 1);
+            background: conic-gradient(
+                #A30000 0deg 60deg, #800000 60deg 120deg, 
+                #A30000 120deg 180deg, #800000 180deg 240deg, 
+                #A30000 240deg 300deg, #800000 300deg 360deg
+            );
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+        }
+        .wheel-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            background: white;
+            border-radius: 50%;
+            z-index: 5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 15px rgba(255,255,255,0.8);
+            border: 3px solid #A30000;
+        }
+        .wheel-center i {
+            color: #EAB308;
+            font-size: 24px;
+        }
+        .wheel-numbers {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+        }
+        .wheel-number {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            padding-top: 20px;
+            font-weight: 900;
+            font-style: italic;
+            font-size: 14px;
+            color: white;
+            text-shadow: 1px 1px 2px black;
+        }
+        .wheel-pointer {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 30px;
+            background: white;
+            clip-path: polygon(50% 100%, 0 0, 100% 0);
+            z-index: 10;
+            filter: drop-shadow(0 4px 4px rgba(0,0,0,0.5));
+        }
+
+        /* CUSTOM MODERN TOAST NOTIFICATION */
+        #toast-container {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+            width: 90%;
+            max-width: 350px;
+            pointer-events: none;
+        }
+        .toast-card {
+            background: rgba(255, 255, 255, 0.95);
+            color: #1a1a1a;
+            padding: 16px 20px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 10px;
+            animation: slideUp 0.4s ease forwards;
+            pointer-events: auto;
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .toast-card.hide {
+            animation: slideDown 0.4s ease forwards;
+        }
+        @keyframes slideDown {
+            to { opacity: 0; transform: translateY(50px); }
+        }
     </style>
 </head>
-<body>
+<body class="">
+
+    <canvas id="matrix-canvas"></canvas>
+    
+    <div id="toast-container"></div>
+
+    <div id="live-notification" class="w-[90%] max-w-[300px]">
+        <div class="glass-card px-4 py-3 flex items-center gap-3 border-white/30 bg-white/20 shadow-2xl">
+            <div class="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center text-[10px]">
+                <i class="fa-solid fa-bell animate-swing"></i>
+            </div>
+            <p id="notif-text" class="text-[10px] font-bold italic truncate uppercase tracking-tight"></p>
+        </div>
+    </div>
 
     <div id="phase-landing" class="animate-fadeIn">
         <nav class="sticky top-4 z-50 mx-4">
@@ -120,9 +286,14 @@
                         <span class="text-[8px] opacity-60 uppercase tracking-widest">Premium Network</span>
                     </div>
                 </div>
-                <button onclick="goToLogin()" class="bg-white text-red-800 text-[10px] font-black px-4 py-2 rounded-full uppercase shadow-lg active:scale-95 transition">
-                    Member Login
-                </button>
+                <div class="flex items-center gap-2">
+                    <button onclick="toggleTheme()" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-xs">
+                        <i class="fa-solid fa-circle-half-stroke"></i>
+                    </button>
+                    <button onclick="goToLogin()" class="bg-white text-red-800 text-[10px] font-black px-4 py-2 rounded-full uppercase shadow-lg active:scale-95 transition">
+                        Member Login
+                    </button>
+                </div>
             </div>
         </nav>
 
@@ -192,6 +363,7 @@
             </div>
         </main>
     </div>
+
     <div id="phase-login" class="hidden min-h-screen flex flex-col items-center justify-center p-6 animate-fadeIn">
         <div class="mb-8 flex flex-col items-center">
             <div class="w-20 h-20 border-[3px] border-white rounded-[25px] flex items-center justify-center p-3 mb-6 shadow-2xl">
@@ -242,92 +414,103 @@
                     <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSTkKQsMBae8IfrrfVsBoCXl1qG0LiuBbjvBA&s" class="h-6" alt="A">
                 </div>
                 <div class="flex-1">
-                    <h2 class="text-3xl font-black italic uppercase leading-none text-white">Dashboard</h2>
-                    <p class="text-[10px] font-bold opacity-60 uppercase tracking-widest text-white">Welcome Back, <span id="user-display">MEMBER</span></p>
+                    <h2 class="text-2xl font-black italic uppercase leading-none text-white">Account Node</h2>
+                    <p class="text-[10px] font-bold opacity-60 uppercase tracking-widest text-white">Logged as: <span id="user-display">MEMBER</span></p>
                 </div>
             </div>
-            <div class="flex gap-3">
-                <div class="bg-white rounded-full px-4 py-2 flex items-center gap-2 text-red-900">
-                   <i class="fa-solid fa-coins text-xs text-yellow-500"></i>
-
-                    <span class="font-black text-lg" id="poin-display">0</span>
+            <div class="flex items-center justify-between bg-white/10 p-4 rounded-3xl border border-white/10">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center text-white shadow-[0_0_15px_rgba(234,179,8,0.5)]">
+                        <i class="fa-solid fa-coins"></i>
+                    </div>
+                    <div>
+                        <p class="text-[8px] font-bold opacity-60 uppercase tracking-widest">Active Balance</p>
+                        <span class="font-black text-xl count-up" id="poin-display">0</span>
+                    </div>
                 </div>
-                <a href="https://chat.whatsapp.com/EXIp6tS8kVB8aXXSR45YC5?mode=gi_t" target="_blank" class="block">
-                    <button class="bg-white/10 border border-white/20 rounded-full px-4 py-2 text-[10px] font-black uppercase flex items-center gap-2 text-white cursor-pointer hover:bg-white/20 transition-all">
-                        <i class="fa-solid fa-users"></i> JOIN GRUB WHATSAPP
-                    </button>
-                </a>
-                <button onclick="goToLanding()" class="bg-white/10 border border-white/20 rounded-full px-4 py-2 text-[10px] font-black uppercase flex items-center gap-2 text-white">
+                <button onclick="goToLanding()" class="bg-white/10 border border-white/20 rounded-2xl px-4 py-2 text-[10px] font-black uppercase flex items-center gap-2 text-white">
                     <i class="fa-solid fa-power-off"></i> Logout
                 </button>
             </div>
+            <a href="https://chat.whatsapp.com/EXIp6tS8kVB8aXXSR45YC5?mode=gi_t" target="_blank" class="block w-full">
+                <button class="w-full bg-white/10 border border-white/20 rounded-full py-4 text-[10px] font-black uppercase flex items-center justify-center gap-2 text-white hover:bg-white/20 transition-all">
+                    <i class="fa-solid fa-users text-blue-400"></i> JOIN COMMAND CENTER (WA)
+                </button>
+            </a>
         </div>
 
         <div class="grid grid-cols-2 gap-4">
-            <div class="glass-card p-5 border-b-4 border-white flex items-center justify-center gap-3">
-                <span class="w-2 h-2 bg-green-500 rounded-full dot-blink"></span>
-                <div class="text-center">
-                    <p class="text-xl font-black italic text-white" id="online-users-display">30</p>
-                    <p class="text-[8px] font-bold opacity-50 uppercase text-white">Pejuang Online</p>
+            <div class="glass-card p-5 border-b-4 border-white flex flex-col items-center justify-center gap-3 relative overflow-hidden">
+                <div class="flex items-center gap-3 relative z-10">
+                    <span class="w-2 h-2 bg-green-500 rounded-full dot-blink"></span>
+                    <div class="text-center">
+                        <p class="text-xl font-black italic text-white" id="online-users-display">30</p>
+                        <p class="text-[8px] font-bold opacity-50 uppercase text-white">Pejuang Online</p>
+                    </div>
                 </div>
+                <svg class="sparkline" viewBox="0 0 100 30"><path d="M0 25 L20 15 L40 20 L60 10 L80 18 L100 5" fill="none" stroke="white" stroke-width="2"/></svg>
             </div>
-            <div class="glass-card p-5 border-b-4 border-white flex items-center justify-center gap-3">
-                <i class="fa-solid fa-fire text-orange-500"></i>
-                <div class="text-center">
-                    <p class="text-xl font-black italic text-white" id="active-camps-display">0</p>
-                    <p class="text-[8px] font-bold opacity-50 uppercase text-white">Kampanye Aktif</p>
+            <div class="glass-card p-5 border-b-4 border-white flex flex-col items-center justify-center gap-3 relative overflow-hidden">
+                <div class="flex items-center gap-3 relative z-10">
+                    <i class="fa-solid fa-fire text-orange-500"></i>
+                    <div class="text-center">
+                        <p class="text-xl font-black italic text-white" id="active-camps-display">0</p>
+                        <p class="text-[8px] font-bold opacity-50 uppercase text-white">Kampanye Aktif</p>
+                    </div>
                 </div>
+                <svg class="sparkline" viewBox="0 0 100 30"><path d="M0 5 L20 20 L40 10 L60 25 L80 15 L100 20" fill="none" stroke="white" stroke-width="2"/></svg>
             </div>
         </div>
 
-        <div class="glass-card p-8 space-y-6">
-            <div class="flex justify-between items-center">
-                <h3 class="text-xl font-black italic uppercase flex items-center gap-3 text-white">
-                    <i class="fa-solid fa-trophy text-yellow-400"></i> Top Pejuang Online
-                </h3>
-                <span class="text-[8px] font-bold opacity-40 uppercase italic text-white">Live Rankings</span>
-            </div>
-            <div class="space-y-3">
-                <div class="bg-white/10 p-4 rounded-3xl flex justify-between items-center border-l-4 border-yellow-400">
-                    <div class="flex items-center gap-4 text-white">
-                        <span class="font-black italic text-yellow-400">#1</span>
-                        <div><p class="text-sm font-black italic">DEN ABI</p><p class="text-[8px] opacity-50 uppercase">Elite Rank</p></div>
+        <div class="glass-card p-8 text-center space-y-6 bg-gradient-to-b from-white/10 to-transparent">
+            <h3 class="text-lg font-black italic uppercase text-white">Lucky Gacha Spin</h3>
+            <p id="spin-quota-display" class="text-[10px] font-bold text-yellow-400 uppercase tracking-widest">Sisa Spin Hari Ini: 3</p>
+            <p class="text-[10px] opacity-60 text-white">Test keberuntungan Anda dengan 1 Token!</p>
+            
+            <div class="wheel-container">
+                <div class="wheel-pointer"></div>
+                <div class="wheel-center">
+                    <i class="fa-solid fa-coins"></i>
+                </div>
+                <div id="wheel">
+                    <div class="wheel-numbers">
+                        <div class="wheel-number" style="transform: rotate(30deg)">0</div>
+                        <div class="wheel-number" style="transform: rotate(90deg)">1</div>
+                        <div class="wheel-number" style="transform: rotate(150deg)">2</div>
+                        <div class="wheel-number" style="transform: rotate(210deg)">5</div>
+                        <div class="wheel-number" style="transform: rotate(270deg)">0</div>
+                        <div class="wheel-number" style="transform: rotate(330deg)">10</div>
                     </div>
-                    <div class="text-right text-white"><p class="text-lg font-black italic">999+</p><p class="text-[8px] opacity-40 uppercase">Token</p></div>
                 </div>
             </div>
+
+            <button id="btn-spin" onclick="spinWheel()" class="bg-white text-red-900 w-full py-4 rounded-full font-black text-xs uppercase shadow-xl active:scale-95 transition-all">
+                Mulai Putaran
+            </button>
         </div>
 
         <div class="glass-card p-8 text-center space-y-4">
-            <h3 class="text-lg font-black italic uppercase text-white">Dividend Token Reward</h3>
-            <p class="text-[10px] opacity-60 text-white">Ambil bonus harian untuk menjaga likuiditas akun Anda.</p>
-            <button id="btn-claim-daily" onclick="claimDailyBonus()" class="bg-white/10 border-2 border-white/30 w-full py-4 rounded-full font-black text-xs uppercase shadow-xl active:scale-95 transition text-white">✅ Klaim Sekarang (+2 Poin)</button>
-        </div>
-
-        <div class="bg-white rounded-[40px] p-8 text-blue-900 space-y-5 shadow-2xl">
-            <h3 class="text-center font-black uppercase text-sm italic tracking-widest">Afiliasi Exclusive</h3>
-            <div class="bg-blue-50 p-4 rounded-3xl border border-blue-100 text-center truncate text-[10px] font-bold opacity-60">
-                <span id="affiliate-link">https://www.denabinetwork.my.id/?ref=Member</span>
-            </div>
-            <button onclick="copyAffiliateLink()" class="bg-blue-900 text-white w-full py-4 rounded-full font-black uppercase text-[11px] shadow-lg active:scale-95 transition">Copy Link</button>
-            <p class="text-[9px] font-bold text-center italic">*Dapatkan 2 Poin setiap teman yang mendaftar!</p>
+            <h3 class="text-lg font-black italic uppercase text-white">Daily Dividend</h3>
+            <p class="text-[10px] opacity-60 text-white">Ambil jatah token harian Anda.</p>
+            <button id="btn-claim-daily" onclick="claimDailyBonus()" class="bg-white/10 border-2 border-white/30 w-full py-4 rounded-full font-black text-xs uppercase shadow-xl active:scale-95 transition text-white">Klaim Daily Reward (+2)</button>
         </div>
 
         <div class="glass-card p-8 space-y-6">
             <h3 class="text-xl font-black italic uppercase flex items-center gap-3 text-white">
-                <i class="fa-solid fa-bullseye"></i> Setup Kampanye
+                <i class="fa-solid fa-bullseye"></i> Deployment Zone
             </h3>
             <div class="space-y-4">
-                <input type="text" id="target-web" placeholder="MASUKKAN LINK DIRECTLINK ADSTERRA" class="w-full p-5 rounded-3xl bg-white/10 border border-white/20 outline-none text-sm font-bold text-white uppercase placeholder:text-white/40">
+                <div class="input-box p-4">
+                    <input type="text" id="target-web" placeholder="DIRECTLINK ADSTERRA" class="w-full bg-transparent outline-none text-sm font-bold text-white uppercase placeholder:text-white/20">
+                </div>
                 
-                <div class="flex justify-between items-center pt-4 text-white">
-    <span class="text-[10px] font-black uppercase italic opacity-60">Target View</span>
-    <span class="text-xl font-black italic" id="view-val">1 View</span>
-</div>
-
-<input type="range" id="view-range" min="1" max="1000" step="1" value="1" oninput="document.getElementById('view-val').innerText = this.value + ' View'">
+                <div class="flex justify-between items-center px-2">
+                    <span class="text-[10px] font-black uppercase italic opacity-60">Target Nodes</span>
+                    <span class="text-xl font-black italic" id="view-val">1 Node</span>
+                </div>
+                <input type="range" id="view-range" min="1" max="1000" step="1" value="1" oninput="document.getElementById('view-val').innerText = this.value + ' Node'" class="mb-4">
                 
-                <button onclick="handleDeployCampaign()" class="bg-white text-red-900 w-full py-6 mt-4 text-[11px] font-black uppercase rounded-full shadow-2xl active:scale-95 transition">
+                <button onclick="handleDeployCampaign()" class="bg-white text-red-900 w-full py-6 text-[11px] font-black uppercase rounded-full shadow-2xl active:scale-95 transition">
                     Deploy Campaign
                 </button>
 
@@ -339,24 +522,18 @@
                         </div>
                         <div class="text-right">
                             <span id="progress-text" class="text-xl font-black italic text-white">0/0</span>
-                            <span class="text-[8px] font-bold opacity-50 block text-white uppercase">Nodes Completed</span>
                         </div>
                     </div>
-                    
-                    <div class="w-full h-4 bg-black/20 rounded-full overflow-hidden border border-white/10 p-0.5">
-                        <div id="progress-bar-fill" class="h-full bg-white rounded-full transition-all duration-1000 shadow-[0_0_15px_rgba(255,255,255,0.5)]" style="width: 0%"></div>
+                    <div class="w-full h-3 bg-black/20 rounded-full overflow-hidden border border-white/10">
+                        <div id="progress-bar-fill" class="h-full bg-white rounded-full transition-all duration-1000" style="width: 0%"></div>
                     </div>
-                    
-                    <p id="progress-domain-display" class="text-[9px] text-center opacity-40 italic text-white truncate px-4 tracking-wider">
-                        Waiting for transmission...
-                    </p>
                 </div>
             </div>
         </div>
 
         <div class="glass-card p-8 text-center space-y-6">
             <div class="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto border-2 border-white/20"><i class="fa-solid fa-bolt text-2xl text-white"></i></div>
-            <h3 class="text-xl font-black italic uppercase text-white">Kehabisan Poin?</h3>
+            <h3 class="text-xl font-black italic uppercase text-white">Mining Token</h3>
             <button onclick="startFarmingProcess()" class="bg-white/10 border-2 border-white/30 w-full py-5 rounded-full font-black text-xs uppercase shadow-xl active:scale-95 transition text-white">Mulai Cari Poin Sekarang</button>
         </div>
     </div>
@@ -364,33 +541,28 @@
     <div id="phase-viewer" class="hidden">
        <div class="viewer-header">
             <div class="leading-none flex-1 overflow-hidden mr-2">
-                <p class="text-[8px] font-bold uppercase opacity-70">Saling Visit Node</p>
+                <p class="text-[8px] font-bold uppercase opacity-70">Visiting Node...</p>
                 <p class="text-sm font-black italic uppercase truncate" id="view-target-name">Member Site</p>
             </div>
             <div class="bg-white text-red-700 px-3 py-1 rounded-xl flex items-center justify-center gap-2 shadow-lg min-w-[80px]">
                 <span id="timer-viewer" class="text-2xl font-black">60</span>
-                <span class="text-[8px] font-black">DETIK</span>
+                <span class="text-[8px] font-black">SEC</span>
             </div>
             <div class="ml-3">
-                <button onclick="stopFarming()" class="bg-black/20 px-3 py-2 rounded-lg text-[10px] font-black uppercase">STOP</button>
+                <button onclick="stopFarming()" class="bg-black/20 px-3 py-2 rounded-lg text-[10px] font-black uppercase">EXIT</button>
             </div>
         </div>
         <div class="flex-1 relative bg-white">
-            <iframe id="ads-frame" src="about:blank" class="w-full h-full border-none" allow="autoplay; fullscreen; clipboard-read; clipboard-write; payment" sandbox="allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-top-navigation-by-user-activation"></iframe>
+            <iframe id="ads-frame" src="about:blank" class="w-full h-full border-none" allow="autoplay; fullscreen" sandbox="allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-top-navigation-by-user-activation"></iframe>
             <div id="click-overlay" class="click-overlay hidden" onclick="handleInternalClick()">
                 <div class="float mb-4"><i class="fa-solid fa-hand-pointer text-6xl"></i></div>
-                <h3 id="overlay-msg" class="text-3xl font-black uppercase px-10 leading-tight text-white">Klik Untuk Lanjut Visit!</h3>
-                <p class="text-[10px] mt-4 tracking-[0.4em] font-bold uppercase text-white px-6">Setelah ini tertutup wajib klik iklan di dalam</p>
+                <h3 id="overlay-msg" class="text-3xl font-black uppercase px-10 leading-tight text-white">Click to Continue!</h3>
+                <p class="text-[10px] mt-4 tracking-[0.4em] font-bold uppercase text-white px-6">Wajib klik iklan di dalam untuk verifikasi</p>
             </div>
         </div>
         <div class="bg-gray-100 border-t border-gray-200 w-full">
-            <div class="px-6 pt-4">
-                <div class="p-3 bg-yellow-50 text-yellow-800 text-[10px] font-bold text-center italic border border-yellow-200 rounded-2xl shadow-sm">
-                    <i class="fa-solid fa-circle-info mr-1"></i> Jika iklan membuka tab baru, silakan kembali ke sini setelah timer selesai untuk klaim poin.
-                </div>
-            </div>
             <div class="p-6 text-center">
-                <button id="btn-claim-poin" onclick="finishFarming()" disabled class="w-full py-5 bg-gray-300 text-gray-500 rounded-3xl font-black uppercase text-xs tracking-widest transition-all">Selesaikan Visit Terlebih Dahulu...</button>
+                <button id="btn-claim-poin" onclick="finishFarming()" disabled class="w-full py-5 bg-gray-300 text-gray-500 rounded-3xl font-black uppercase text-xs tracking-widest transition-all">Selesaikan Visit...</button>
             </div>
         </div>
     </div>
@@ -401,7 +573,28 @@
         </a>
     </div>
 
-    <script>
+ <script>
+window.stopFarming = function() {
+    if (confirm("Apakah Anda yakin ingin menghentikan mining? Progres poin saat ini akan hilang.")) {
+        // Hentikan timer jika sedang berjalan
+        clearInterval(timerInterval);
+        
+        // Kosongkan src iframe agar tidak berat
+        $('ads-frame').src = "about:blank";
+        
+        // Sembunyikan overlay jika ada
+        $('click-overlay').classList.add('hidden');
+        
+        // Kembali ke dashboard
+        showPhase('phase-dashboard');
+        
+        // Update status kampanye terbaru
+        refreshCampaignStatus();
+        
+        // Munculkan notifikasi penutup
+        showToast("Mining Dihentikan", "fa-circle-info");
+    }
+};
         const API_URL = "https://quiet-poetry-4ac5.denabidin97.workers.dev";
         const $ = (id) => document.getElementById(id);
 
@@ -411,165 +604,257 @@
         let currentWorkingId = null;
         let currentPhase = 'phase-landing';
 
+        // --- NEW AUDIO & NOTIFICATION SYSTEM ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if(type === 'coin') {
+                osc.type = "sine";
+                osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(1320, audioCtx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+            } else if(type === 'tick') {
+                osc.type = "square";
+                osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.02, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.05);
+            } else if(type === 'notif') {
+                osc.type = "triangle";
+                osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(1046.50, audioCtx.currentTime + 0.2);
+                gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.5);
+            }
+        }
+
+        function showToast(msg, icon = 'fa-circle-check') {
+            playSound('notif');
+            const container = $('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast-card';
+            toast.innerHTML = `<i class="fa-solid ${icon} text-red-600 text-xl"></i><p class="font-bold text-sm uppercase italic">${msg}</p>`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.add('hide');
+                setTimeout(() => toast.remove(), 400);
+            }, 3000);
+        }
+
+        // --- BACKGROUND MATRIX ---
+        const canvas = $('matrix-canvas');
+        const ctx = canvas.getContext('2d');
+        function initMatrix() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            const columns = Math.floor(canvas.width / 20);
+            const drops = Array(columns).fill(1);
+            function draw() {
+                ctx.fillStyle = "rgba(163, 0, 0, 0.05)";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = "#ff4d4d";
+                ctx.font = "15px monospace";
+                for (let i = 0; i < drops.length; i++) {
+                    const text = String.fromCharCode(Math.random() * 128);
+                    ctx.fillText(text, i * 20, drops[i] * 20);
+                    if (drops[i] * 20 > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                    drops[i]++;
+                }
+            }
+            setInterval(draw, 50);
+        }
+        initMatrix();
+
+        // --- LUCKY SPIN LOGIC ---
+        let isSpinning = false;
+        
+        // Fungsi untuk mengelola kuota spin harian
+        function getSpinQuota() {
+            const today = new Date().toDateString();
+            const savedData = JSON.parse(localStorage.getItem('denabi_spin_data') || '{}');
+            
+            if (savedData.date !== today) {
+                return 3; // Reset kuota jika hari baru
+            }
+            return savedData.count ?? 3;
+        }
+
+        function updateSpinQuota(count) {
+            const today = new Date().toDateString();
+            localStorage.setItem('denabi_spin_data', JSON.stringify({
+                date: today,
+                count: count
+            }));
+            if($('spin-quota-display')) $('spin-quota-display').innerText = `Sisa Spin Hari Ini: ${count}`;
+        }
+
+        async function spinWheel() {
+            if (isSpinning) return;
+            
+            const quota = getSpinQuota();
+            if (quota <= 0) return showToast("Kuota Spin Hari Ini Habis!", "fa-circle-xmark");
+            if (currentPoin < 1) return showToast("Balance minimal 1 Token!", "fa-circle-exclamation");
+            
+            isSpinning = true;
+            const wheel = $('wheel');
+            const randomDegree = Math.floor(Math.random() * 360) + 3600; 
+            
+            let tickCount = 0;
+            const tickInterval = setInterval(() => {
+                if(tickCount < 40) { playSound('tick'); tickCount++; }
+                else { clearInterval(tickInterval); }
+            }, 100);
+
+            wheel.style.transition = "transform 4s cubic-bezier(0.15, 0, 0.15, 1)";
+            wheel.style.transform = `rotate(${randomDegree}deg)`;
+            
+            const token = localStorage.getItem('denabi_token');
+            const username = localStorage.getItem('username');
+
+            setTimeout(async () => {
+                isSpinning = false;
+                const rewards = [0, 1, 2, 5, 0, 10]; 
+                const reward = rewards[Math.floor(Math.random() * rewards.length)];
+                
+                try {
+                    const res = await fetch(`${API_URL}/update-poin`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                        body: JSON.stringify({ username, amount: reward - 1 })
+                    });
+                    const data = await res.json();
+                    if(data.success) {
+                        updateSpinQuota(quota - 1); // Kurangi kuota sukses
+                        if(reward > 0) { playSound('coin'); showToast(`WIN! ${reward} Token Added!`); }
+                        else { showToast("Maaf, Zonk!", "fa-face-frown"); }
+                        animateValue('poin-display', currentPoin, data.newPoin);
+                        currentPoin = data.newPoin;
+                        updateDashboardUI();
+                    }
+                } catch(e) {
+                    isSpinning = false;
+                }
+                wheel.style.transition = "none";
+                wheel.style.transform = `rotate(${randomDegree % 360}deg)`;
+                setTimeout(() => wheel.style.transition = "transform 4s cubic-bezier(0.15, 0, 0.15, 1)", 100);
+            }, 4000);
+        }
+
+        // --- AUTH & NAVIGATION ---
         window.showPhase = function(id) {
             const phases = ['phase-landing', 'phase-login', 'phase-dashboard', 'phase-viewer'];
-            phases.forEach(p => {
-                const el = $(p);
-                if (el) el.classList.add('hidden');
-            });
-            const target = $(id);
-            if (target) {
-                target.classList.remove('hidden');
-                currentPhase = id;
-                window.scrollTo(0, 0);
-            }
+            phases.forEach(p => $(p).classList.add('hidden'));
+            $(id).classList.remove('hidden');
+            currentPhase = id;
+            window.scrollTo(0, 0);
         };
 
-        window.goToLogin = () => window.showPhase('phase-login');
-        window.goToLanding = () => {
-            localStorage.clear();
-            location.reload();
-        };
+        window.goToLogin = () => showPhase('phase-login');
+        window.goToLanding = () => { localStorage.clear(); location.reload(); };
 
         window.onload = function() {
+            if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark-mode');
+            
+            // Inisialisasi tampilan kuota spin
+            updateSpinQuota(getSpinQuota());
+            
             const savedUser = localStorage.getItem('denabi_username');
             const isLoggedIn = localStorage.getItem('isLoggedIn');
             const token = localStorage.getItem('denabi_token');
-
             if (isLoggedIn === 'true' && savedUser) {
-                if ($('user-display')) $('user-display').innerText = savedUser.toUpperCase();
-                if ($('affiliate-link')) $('affiliate-link').innerText = `https://www.denabinetwork.my.id/?ref=${savedUser}`;
-                window.showPhase('phase-dashboard');
+                $('user-display').innerText = savedUser.toUpperCase();
+                showPhase('phase-dashboard');
                 refreshCampaignStatus();
-                
-                fetch(`${API_URL}/me`, {
-                    headers: { 'Authorization': 'Bearer ' + token }
-                })
+                fetch(`${API_URL}/me`, { headers: { 'Authorization': 'Bearer ' + token } })
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
+                        animateValue('poin-display', currentPoin, parseInt(data.poin));
                         currentPoin = parseInt(data.poin);
                         updateDashboardUI();
                     }
-                })
-                .catch(err => console.error("Sync Error"));
-            } else {
-                updateDashboardUI();
+                });
             }
             refreshGlobalStats();
         };
 
         window.toggleAuth = function(type) {
-            const isSignUp = type === 'signup' || type === 'register';
-            $('input-username').value = "";
-            $('input-password').value = "";
-            if($('input-confirm')) $('input-confirm').value = "";
-            
-            $('tab-signup').className = `text-sm font-black uppercase tracking-widest ${isSignUp ? 'border-b-2 border-white pb-2' : 'opacity-40 pb-2'} transition-all`;
-            $('tab-signin').className = `text-sm font-black uppercase tracking-widest ${!isSignUp ? 'border-b-2 border-white pb-2' : 'opacity-40 pb-2'} transition-all`;
+            const isSignUp = type === 'signup';
+            $('tab-signup').classList.toggle('opacity-40', !isSignUp);
+            $('tab-signup').classList.toggle('border-b-2', isSignUp);
+            $('tab-signin').classList.toggle('opacity-40', isSignUp);
+            $('tab-signin').classList.toggle('border-b-2', !isSignUp);
             $('box-confirm').classList.toggle('hidden', !isSignUp);
-            
-            const btn = $('btn-auth');
-            if (btn) {
-                btn.innerText = isSignUp ? "DAFTAR SEKARANG" : "AUTHORIZE ACCESS";
-            }
+            $('btn-auth').innerText = isSignUp ? "DAFTAR SEKARANG" : "AUTHORIZE ACCESS";
         };
 
         window.handleAuthSubmit = async function(e) {
             e.preventDefault();
             const user = $('input-username').value.trim().toLowerCase();
             const pass = $('input-password').value;
-            const confirmPass = $('input-confirm') ? $('input-confirm').value : null;
             const isSignUp = !$('box-confirm').classList.contains('hidden');
-
-            if (!user || !pass) return alert("Harap isi username dan password!");
-
+            if (!user || !pass) return showToast("Harap lengkapi data!", "fa-circle-xmark");
             const btn = $('btn-auth');
-            btn.disabled = true;
-            btn.innerText = "PROCESSING...";
-
+            btn.disabled = true; btn.innerText = "AUTHENTICATING...";
             try {
                 const res = await fetch(`${API_URL}/auth`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        mode: isSignUp ? 'register' : 'login', 
-                        username: user, 
-                        password: pass,
-                        refBy: new URL(location.href).searchParams.get("ref") || ""
-                    })
+                    body: JSON.stringify({ mode: isSignUp ? 'register' : 'login', username: user, password: pass })
                 });
                 const data = await res.json();
-
                 if (data.success) {
-                    if (isSignUp) {
-                        alert("✅ Registrasi Sukses! Silakan Login.");
-                        window.toggleAuth('signin');
-                    } else {
-                        localStorage.setItem('isLoggedIn', 'true');
-                        localStorage.setItem('username', user);
-                        localStorage.setItem('denabi_username', user);
-                        localStorage.setItem('denabi_token', data.token);
-                        
-                        currentPoin = parseInt(data.poin || 0);
-                        updateDashboardUI();
-                        window.showPhase('phase-dashboard');
+                    if (isSignUp) { showToast("Sukses! Silakan Login."); toggleAuth('signin'); }
+                    else { 
+                        localStorage.setItem('isLoggedIn', 'true'); localStorage.setItem('username', user); 
+                        localStorage.setItem('denabi_username', user); localStorage.setItem('denabi_token', data.token); 
+                        showPhase('phase-dashboard'); location.reload();
                     }
-                } else {
-                    alert("❌ " + (data.msg || "Gagal Autentikasi"));
-                }
-            } catch (err) {
-                alert("Kesalahan: " + err.message);
-            } finally {
-                btn.disabled = false;
-                const isNowSignUp = !$('box-confirm').classList.contains('hidden');
-                btn.innerText = isNowSignUp ? "DAFTAR SEKARANG" : "AUTHORIZE ACCESS";
-            }
+                } else { showToast(data.msg || "Gagal!", "fa-circle-xmark"); }
+            } catch (err) { showToast("Network Error!", "fa-wifi"); }
+            finally { btn.disabled = false; btn.innerText = isSignUp ? "DAFTAR SEKARANG" : "AUTHORIZE ACCESS"; }
         };
 
-        window.updateDashboardUI = function() {
-            if ($('poin-display')) $('poin-display').innerText = currentPoin;
-            localStorage.setItem('denabi_poin', currentPoin);
-        };
+        function animateValue(id, start, end) {
+            const obj = $(id); if (!obj) return;
+            let startTimestamp = null;
+            const duration = 500;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                obj.innerHTML = Math.floor(progress * (end - start) + start);
+                if (progress < 1) window.requestAnimationFrame(step);
+            };
+            window.requestAnimationFrame(step);
+        }
+
+        window.updateDashboardUI = () => localStorage.setItem('denabi_poin', currentPoin);
 
         window.handleDeployCampaign = async function() {
             const directLink = $('target-web').value.trim();
             const viewValue = parseInt($('view-range').value); 
-            const username = localStorage.getItem('username');
             const token = localStorage.getItem('denabi_token');
-
-            if (!directLink) return alert("Harap masukkan link Directlink Anda!");
-            if (currentPoin < viewValue) return alert("Poin Anda tidak cukup!");
-
-            if (confirm(`Gunakan ${viewValue} Poin untuk deploy kampanye?`)) {
-                const btn = document.querySelector('button[onclick="handleDeployCampaign()"]');
-                btn.disabled = true; btn.innerText = "DEPLOYING...";
-
+            if (!directLink) return showToast("Harap isi Directlink!", "fa-circle-exclamation");
+            if (currentPoin < viewValue) return showToast("Token Tidak Cukup!", "fa-circle-xmark");
+            
+            if (confirm(`Gunakan ${viewValue} Poin?`)) {
                 try {
                     const res = await fetch(`${API_URL}/update-poin`, {
                         method: 'POST',
-                        headers: { 
-                            'Content-Type': 'application/json',
-                            'Authorization': 'Bearer ' + token
-                        },
-                        body: JSON.stringify({ 
-                            username, 
-                            amount: -viewValue, 
-                            campaignUrl: directLink, 
-                            adLink1: directLink, 
-                            adLink2: null,
-                            target: viewValue 
-                        })
+                        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                        body: JSON.stringify({ username: localStorage.getItem('username'), amount: -viewValue, campaignUrl: directLink, adLink1: directLink, adLink2: null, target: viewValue })
                     });
                     const data = await res.json();
-                    if (data.success) {
-                        currentPoin = parseInt(data.newPoin);
-                        window.updateDashboardUI();
-                        alert("🚀 KAMPANYE BERHASIL DIDEPLOY!");
-                        refreshCampaignStatus(); 
-                    } else { alert("Gagal: " + data.msg); }
-                } catch (e) { alert("Koneksi gagal."); }
-                finally { btn.disabled = false; btn.innerText = "Deploy Campaign"; }
+                    if (data.success) { animateValue('poin-display', currentPoin, data.newPoin); currentPoin = data.newPoin; showToast("KAMPANYE DIDEPLOY!"); refreshCampaignStatus(); }
+                } catch (e) { showToast("Gagal Deploy!"); }
             }
         };
 
@@ -577,123 +862,76 @@
             const token = localStorage.getItem('denabi_token');
             if (!token || currentPhase !== 'phase-dashboard') return;
             try {
-                const res = await fetch(`${API_URL}/get-my-campaign`, {
-                    headers: { 'Authorization': 'Bearer ' + token }
-                });
+                const res = await fetch(`${API_URL}/get-my-campaign`, { headers: { 'Authorization': 'Bearer ' + token } });
                 const data = await res.json();
                 if (data.success && data.campaign) {
-                    const { current, target, url } = data.campaign;
+                    const { current, target } = data.campaign;
                     $('campaign-monitor').classList.remove('hidden');
                     $('progress-text').innerText = `${current} / ${target}`;
                     $('progress-bar-fill').style.width = `${(current/target)*100}%`;
-                    try { $('progress-domain-display').innerText = new URL(url).hostname; } catch(e) { $('progress-domain-display').innerText = url; }
-                } else {
-                    $('campaign-monitor').classList.add('hidden');
-                }
-            } catch (e) { console.log("Sync failed"); }
+                } else { $('campaign-monitor').classList.add('hidden'); }
+            } catch (e) {}
         };
 
         window.startFarmingProcess = async function() {
             const token = localStorage.getItem('denabi_token');
             try {
-                const res = await fetch(`${API_URL}/get-campaign`, {
-                    headers: { 'Authorization': 'Bearer ' + token }
-                });
+                const res = await fetch(`${API_URL}/get-campaign`, { headers: { 'Authorization': 'Bearer ' + token } });
                 const data = await res.json();
                 if (data.success) {
-                    if (data.url === "EMPTY") return alert("📭 Belum ada kampanye aktif dari member lain.");
-                    
-                    currentWorkingId = data.owner; 
-                    window.showPhase('phase-viewer'); 
-                    const frame = $('ads-frame');
-                    frame.src = "about:blank";
-                    setTimeout(() => { frame.src = data.url; }, 200);
-
-                    try { $('view-target-name').innerText = new URL(data.url).hostname.toUpperCase(); } 
-                    catch(e) { $('view-target-name').innerText = "ACTIVE NODE"; }
-                    
-                    timeLeft = 60;
-                    $('timer-viewer').innerText = timeLeft;
+                    if (data.url === "EMPTY") return showToast("Gak ada iklan!", "fa-face-meh");
+                    showPhase('phase-viewer'); 
+                    $('ads-frame').src = data.url;
+                    try { $('view-target-name').innerText = new URL(data.url).hostname.toUpperCase(); } catch(e) { $('view-target-name').innerText = "NODE ACTIVE"; }
+                    timeLeft = 60; $('timer-viewer').innerText = timeLeft;
                     startTimer();
-                } else { alert("Gagal memuat kampanye."); }
-            } catch (e) { alert("Gagal terhubung ke Network."); }
+                }
+            } catch (e) { showToast("Gagal muat!", "fa-wifi"); }
         };
 
         function startTimer() {
             clearInterval(timerInterval);
             const btnClaim = $('btn-claim-poin');
-            btnClaim.disabled = true;
-            btnClaim.innerText = "Selesaikan Visit Terlebih Dahulu...";
-            btnClaim.className = "w-full py-5 bg-gray-400 text-white rounded-3xl font-black uppercase text-xs opacity-50";
-            
+            btnClaim.disabled = true; btnClaim.className = "w-full py-5 bg-gray-300 text-gray-500 rounded-3xl font-black uppercase text-xs";
             timerInterval = setInterval(() => {
-                timeLeft--;
-                $('timer-viewer').innerText = timeLeft;
-                if ([45, 30, 15].includes(timeLeft)) { window.pauseTimerAndShowClick(); }
+                timeLeft--; $('timer-viewer').innerText = timeLeft;
+                if ([45, 30, 15].includes(timeLeft)) $('click-overlay').classList.remove('hidden');
                 if (timeLeft <= 0) {
-                    clearInterval(timerInterval);
-                    $('click-overlay').classList.add('hidden'); 
-                    btnClaim.disabled = false;
-                    btnClaim.innerText = "KLAIM TOKEN SEKARANG (+1)";
-                    btnClaim.className = "w-full py-5 bg-green-600 text-white rounded-3xl font-black uppercase text-xs animate-bounce cursor-pointer relative z-[999]";
+                    clearInterval(timerInterval); $('click-overlay').classList.add('hidden'); 
+                    btnClaim.disabled = false; btnClaim.innerText = "KLAIM TOKEN (+1)";
+                    btnClaim.className = "w-full py-5 bg-green-600 text-white rounded-3xl font-black uppercase text-xs animate-bounce cursor-pointer";
                 }
             }, 1000);
         }
 
-        window.pauseTimerAndShowClick = function() { clearInterval(timerInterval); $('click-overlay').classList.remove('hidden'); };
-        window.handleInternalClick = function() { $('click-overlay').classList.add('hidden'); $('ads-frame').focus(); startTimer(); };
+        window.handleInternalClick = () => { $('click-overlay').classList.add('hidden'); playSound('tick'); };
 
         window.finishFarming = async function() {
-            const btn = $('btn-claim-poin');
             const token = localStorage.getItem('denabi_token');
-            btn.disabled = true; btn.innerText = "VALIDATING...";
             try {
                 const res = await fetch(`${API_URL}/update-poin`, {
                     method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + token
-                    },
-                    body: JSON.stringify({ 
-                        username: localStorage.getItem('username'), 
-                        amount: 1 
-                    })
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                    body: JSON.stringify({ username: localStorage.getItem('username'), amount: 1 })
                 });
                 const data = await res.json();
                 if (data.success) {
-                    currentPoin = parseInt(data.newPoin);
-                    window.updateDashboardUI();
-                    btn.innerText = "MENCARI TARGET BERIKUTNYA...";
-                    setTimeout(() => { window.startFarmingProcess(); }, 1500); 
-                } else { alert("Gagal klaim."); window.showPhase('phase-dashboard'); }
-            } catch (e) { alert("Gagal koneksi."); window.showPhase('phase-dashboard'); }
-        };
-
-        window.stopFarming = function() { 
-            if(confirm("Berhenti farming?")) { clearInterval(timerInterval); window.showPhase('phase-dashboard'); refreshCampaignStatus(); }
+                    playSound('coin'); showToast("TOKEN DITERIMA!");
+                    animateValue('poin-display', currentPoin, data.newPoin);
+                    currentPoin = data.newPoin; updateDashboardUI();
+                    setTimeout(() => startFarmingProcess(), 1000); 
+                }
+            } catch (e) { showPhase('phase-dashboard'); }
         };
 
         window.claimDailyBonus = async function() {
             const token = localStorage.getItem('denabi_token');
-            const btn = $('btn-claim-daily');
-            btn.disabled = true; btn.innerText = "WAIT...";
             try {
-                const res = await fetch(`${API_URL}/daily-checkin`, {
-                    method: 'POST',
-                    headers: { 'Authorization': 'Bearer ' + token }
-                });
+                const res = await fetch(`${API_URL}/daily-checkin`, { method: 'POST', headers: { 'Authorization': 'Bearer ' + token } });
                 const data = await res.json();
-                if (data.success) {
-                    currentPoin = parseInt(data.newPoin);
-                    window.updateDashboardUI();
-                    alert("✅ Bonus harian +2 ditambahkan!");
-                } else { alert(data.msg || "Gagal absen."); }
-            } catch (e) { alert("Error koneksi."); }
-            finally { btn.innerText = "✅ Klaim Sekarang (+2 Poin)"; }
-        };
-
-        window.copyAffiliateLink = function() { 
-            navigator.clipboard.writeText($('affiliate-link').innerText).then(() => alert("Copied!")); 
+                if (data.success) { playSound('coin'); showToast("DAILY BONUS +2!"); animateValue('poin-display', currentPoin, data.newPoin); currentPoin = data.newPoin; updateDashboardUI(); }
+                else { showToast(data.msg || "Besok lagi ya!", "fa-circle-xmark"); }
+            } catch (e) {}
         };
 
         async function refreshGlobalStats() {
@@ -701,29 +939,16 @@
                 const res = await fetch(`${API_URL}/get-stats`);
                 const data = await res.json();
                 if (data.success) {
-                    // Update Landing Page: Total Member (Asli + 100)
-                    if ($('total-member-display')) {
-                        $('total-member-display').innerText = ((data.total || 0) + 100) + "+";
-                    }
-                    // Update Dashboard: Pejuang Online (Asli + 30)
-                    if ($('online-users-display')) {
-                        $('online-users-display').innerText = (data.total || 0) + 30;
-                    }
-                    // Active Campaigns tetap asli
-                    if ($('active-camps-display')) {
-                        $('active-camps-display').innerText = data.activeCamps || 0;
-                    }
+                    if($('total-member-display')) $('total-member-display').innerText = (data.total || 0) + 100 + "+";
+                    if($('online-users-display')) $('online-users-display').innerText = (data.total || 0) + 30;
+                    if($('active-camps-display')) $('active-camps-display').innerText = data.activeCamps || 0;
                 }
-            } catch (e) {
-                console.log("Stats error");
-            }
+            } catch (e) {}
         }
 
-        setInterval(() => { 
-            if(localStorage.getItem('isLoggedIn') === 'true' && currentPhase === 'phase-dashboard') window.refreshCampaignStatus(); 
-        }, 20000);
-        
+        setInterval(() => { if(localStorage.getItem('isLoggedIn') === 'true' && currentPhase === 'phase-dashboard') window.refreshCampaignStatus(); }, 20000);
         setInterval(refreshGlobalStats, 30000);
+        window.toggleTheme = () => document.body.classList.toggle('dark-mode');
     </script>
 </body>
 </html>
