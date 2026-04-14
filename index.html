@@ -288,6 +288,7 @@
     </style>
 </head>
 <body class="" oncontextmenu="return false" onselectstart="return false" ondragstart="return false">
+
     <canvas id="matrix-canvas"></canvas>
     
     <div id="toast-container"></div>
@@ -1426,82 +1427,66 @@
 
         setInterval(() => { if(localStorage.getItem('isLoggedIn') === 'true' && currentPhase === 'phase-dashboard') window.refreshCampaignStatus(); }, 20000);
         setInterval(refreshGlobalStats, 30000);
-        window.toggleTheme = () => document.body.classList.toggle('dark-mode');();
+        window.toggleTheme = () => document.body.classList.toggle('dark-mode');
+        /* =========================================
+   DEN ABI SECURITY SYSTEM - ANTI THEFT CODE
+   =========================================
+*/
 
-/* ============================================================
-   DEN ABI NETWORK - ULTRA SECURITY SYSTEM (ANTI-THEFT v3.0)
-   ============================================================ */
 (function() {
+    // URL tujuan saat ada yang mencoba nakal
     const redirectUrl = "https://google.com"; 
-    const warningMessage = "AKSES DITOLAK! Dilarang keras mencuri atau menginspeksi kode Den Abi Network.";
+    const warningMessage = "AKSES DITOLAK! Anda tidak diizinkan menginspeksi atau mencuri kode Den Abi Network.";
 
     function triggerSecurity() {
-        // Gunakan replace agar user tidak bisa klik 'Back' di browser
-        window.location.replace(redirectUrl);
         alert(warningMessage);
+        window.location.href = redirectUrl;
     }
 
-    // 1. PROTEKSI KLIK KANAN & SELEKSI
-    document.addEventListener('contextmenu', e => e.preventDefault());
-    document.addEventListener('selectstart', e => e.preventDefault());
-    document.addEventListener('dragstart', e => e.preventDefault());
+    // 1. Matikan Klik Kanan (Anti Context Menu)
+    document.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+    }, false);
 
-    // 2. PROTEKSI KEYBOARD (F12, CTRL+U, CTRL+SHIFT+I/J/C, CTRL+S)
+    // 2. Matikan Shortcut Keyboard (F12, Ctrl+Shift+I, Ctrl+U, dll)
     document.addEventListener('keydown', function(e) {
         if (
-            e.keyCode === 123 || // F12
-            (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) || // Ctrl+Shift+I/J/C
-            (e.ctrlKey && e.keyCode === 85) || // Ctrl+U
-            (e.ctrlKey && e.keyCode === 83)    // Ctrl+S
+            // F12
+            e.key === 'F12' || 
+            // Ctrl + Shift + I (Inspect)
+            (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i')) || 
+            // Ctrl + Shift + J (Console)
+            (e.ctrlKey && e.shiftKey && (e.key === 'J' || e.key === 'j')) || 
+            // Ctrl + U (View Source)
+            (e.ctrlKey && (e.key === 'U' || e.key === 'u')) || 
+            // Ctrl + Shift + C (Element Selector)
+            (e.ctrlKey && e.shiftKey && (e.key === 'C' || e.key === 'c')) ||
+            // Ctrl + S (Save Page)
+            (e.ctrlKey && (e.key === 'S' || e.key === 's'))
         ) {
             e.preventDefault();
             triggerSecurity();
-            return false;
         }
     });
 
-    // 3. DETEKSI PERUBAHAN UKURAN LAYAR (INSPECTOR SIDEBAR)
-    // Jika user buka inspect di samping atau bawah, innerWidth akan mengecil drastis
-    const threshold = 160;
-    setInterval(() => {
-        const isDevToolsOpen = 
-            window.outerWidth - window.innerWidth > threshold || 
-            window.outerHeight - window.innerHeight > threshold;
-        if (isDevToolsOpen) {
+    setInterval(function() {
+        const startTime = performance.now();
+        debugger; // Titik jebakan
+        const endTime = performance.now();
+        if (endTime - startTime > 100) {
             triggerSecurity();
         }
     }, 1000);
 
-    // 4. CONSOLE LOG TRAP (DETECTS WHEN CONSOLE DRAWS OBJECT)
-    // Trik ini memicu fungsi saat browser mencoba merender objek di konsol
-    const element = new Image();
-    Object.defineProperty(element, 'id', {
-        get: function() {
-            triggerSecurity();
-        }
+    // 4. Anti-Copas & Seleksi (Double Protection)
+    document.addEventListener('copy', function(e) {
+        e.preventDefault();
     });
-
-    // Terus menerus mengirim objek jebakan ke log
-    setInterval(() => {
-        console.log(element);
-        console.clear();
-    }, 500);
-
-    // 5. DEBUGGER LOOP (HARD PROTECTION)
-    // Membuat browser 'nyangkut' jika mencoba melakukan debugging
-    (function antiDebug(n) {
-        if ((function() { return false; })['constructor']('debugger')['call']()) {
-            triggerSecurity();
-        }
-        if (n > 0) antiDebug(n + 1);
-    }(0));
-
-    // 6. PROTEKSI IFRAME (Agar web Mas tidak bisa dipasang di web orang lain/Iframe)
-    if (window.self !== window.top) {
-        window.top.location = window.self.location;
-    }
-
+    document.addEventListener('cut', function(e) {
+        e.preventDefault();
+    });
 })();
+
     </script>
 </body>
 </html>
