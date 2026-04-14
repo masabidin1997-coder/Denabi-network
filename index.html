@@ -28,6 +28,11 @@
             transition: background-color 0.5s ease;
         }
 
+        body.bg-dashboard-light {
+            background-color: #f3f4f6 !important;
+            color: #1f2937 !important;
+        }
+
         /* MATRIX RED BACKGROUND */
         #matrix-canvas {
             position: fixed;
@@ -38,6 +43,7 @@
             z-index: -1;
             opacity: 0.15;
             pointer-events: none;
+            transition: opacity 0.5s ease;
         }
 
         .glass-card {
@@ -103,6 +109,8 @@
 
         input[type=range] { appearance: none; width: 100%; background: rgba(255,255,255,0.2); height: 6px; border-radius: 5px; outline: none; }
         input[type=range]::-webkit-slider-thumb { appearance: none; width: 18px; height: 18px; background: #fff; border-radius: 50%; cursor: pointer; }
+        input[type=range].light-theme-range { background: #e5e7eb; }
+        input[type=range].light-theme-range::-webkit-slider-thumb { background: #b91c1c; }
 
         #phase-viewer { position: fixed; inset: 0; z-index: 200; background: #fff; display: flex; flex-direction: column; }
         .viewer-header { 
@@ -118,7 +126,24 @@
             width: 100%;
             box-sizing: border-box;
         }
-        .click-overlay { position: absolute; inset: 0; background: rgba(163, 0, 0, 0.8); backdrop-filter: blur(8px); z-index: 210; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: white; cursor: pointer; }
+        /* MODIFIED OVERLAY FOR CLICK-THROUGH */
+        .click-overlay { 
+            position: absolute; 
+            inset: 0; 
+            background: rgba(163, 0, 0, 0.6); 
+            backdrop-filter: blur(3px); 
+            z-index: 210; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            text-align: center; 
+            color: white; 
+            pointer-events: none; /* TEMBUS PANDANG SENTUHAN */
+        }
+        .click-overlay * {
+            pointer-events: none; /* ANAK ELEMEN JUGA TEMBUS */
+        }
 
         /* Notification Styles */
         #live-notification {
@@ -169,7 +194,7 @@
                 #A30000 120deg 180deg, #800000 180deg 240deg, 
                 #A30000 240deg 300deg, #800000 300deg 360deg
             );
-            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+            box-shadow: 0 0 30px rgba(0,0,0,0.2);
         }
         .wheel-center {
             position: absolute;
@@ -257,6 +282,9 @@
         @keyframes slideDown {
             to { opacity: 0; transform: translateY(50px); }
         }
+        
+        /* Hide scrollbar for smooth UI */
+        ::-webkit-scrollbar { width: 0px; background: transparent; }
     </style>
 </head>
 <body class="">
@@ -281,13 +309,13 @@
                     <div class="w-10 h-10 border-2 border-white/40 rounded-xl flex items-center justify-center p-1">
                         <img src="https://i.imgur.com/PwmtlIn.png" alt="Logo" class="rounded-lg">
                     </div>
-                    <div class="leading-none">
-                        <span class="block font-black italic text-sm uppercase tracking-tighter">Den Abi</span>
+                    <div class="leading-none text-white">
+                        <span class="block font-black italic text-sm uppercase tracking-tighter">Den Abi Network</span>
                         <span class="text-[8px] opacity-60 uppercase tracking-widest">Premium Network</span>
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
-                    <button onclick="toggleTheme()" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-xs">
+                    <button onclick="toggleTheme()" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-xs text-white">
                         <i class="fa-solid fa-circle-half-stroke"></i>
                     </button>
                     <button onclick="goToLogin()" class="bg-white text-red-800 text-[10px] font-black px-4 py-2 rounded-full uppercase shadow-lg active:scale-95 transition">
@@ -297,7 +325,7 @@
             </div>
         </nav>
 
-        <main class="px-6 pt-12 pb-24 space-y-10">
+        <main class="px-6 pt-12 pb-24 space-y-10 text-white">
             <div class="flex items-center gap-3">
                 <div class="w-1 h-10 bg-white"></div>
                 <div class="flex items-center gap-2">
@@ -318,7 +346,7 @@
 </p>
             </div>
 
-          <div class="lg:hidden relative glass p-6 rounded-[35px] border-2 border-white/30 shadow-2xl flex flex-col items-center justify-center space-y-4">
+          <div class="lg:hidden relative glass-card p-6 rounded-[35px] border-2 border-white/30 shadow-2xl flex flex-col items-center justify-center space-y-4">
           <div class="flex items-center gap-6">
             <i class="fa-solid fa-dollar-sign text-5xl text-white drop-shadow-xl animate-pulse"></i>
             <div class="h-10 w-[2px] bg-white/20"></div>
@@ -331,18 +359,18 @@
           </div>
         </div>
 
-<div class="space-y-4 pt-4 pb-2 text-center">
-    <p class="text-[14px] sm:text-[16px] leading-relaxed font-medium text-white/95 max-w-[340px] mx-auto">
-        Transformasikan trafik Anda menjadi aset digital. <br>
-        Ekosistem pertukaran paling aman untuk optimasi Adsterra & Monetisasi tingkat lanjut.
-    </p>
-</div>
+        <div class="space-y-4 pt-4 pb-2 text-center">
+            <p class="text-[14px] sm:text-[16px] leading-relaxed font-medium text-white/95 max-w-[340px] mx-auto">
+                Transformasikan trafik Anda menjadi aset digital. <br>
+                Ekosistem pertukaran paling aman untuk optimasi Adsterra & Monetisasi tingkat lanjut.
+            </p>
+        </div>
 
-<div class="flex flex-col gap-4">
-    <button onclick="goToLogin()" class="btn-white py-5 text-sm uppercase tracking-widest flex items-center justify-center gap-3 shadow-xl active:scale-95 transition">
-        Mulai Sekarang <i class="fa-solid fa-arrow-right"></i>
-    </button>
-</div>
+        <div class="flex flex-col gap-4">
+            <button onclick="goToLogin()" class="btn-white py-5 text-sm uppercase tracking-widest flex items-center justify-center gap-3 shadow-xl active:scale-95 transition">
+                Mulai Sekarang <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </div>
 
 
             <div class="flex items-center gap-12 pt-6 border-t border-white/10">
@@ -369,35 +397,35 @@
             <div class="w-20 h-20 border-[3px] border-white rounded-[25px] flex items-center justify-center p-3 mb-6 shadow-2xl">
                 <img src="https://i.imgur.com/PwmtlIn.png" alt="Logo" class="w-full">
             </div>
-            <h1 class="text-3xl font-black italic glow-text tracking-tighter uppercase mb-2">Premium Auth</h1>
+            <h1 class="text-3xl font-black italic glow-text tracking-tighter uppercase mb-2 text-white">Premium Auth</h1>
         </div>
 
         <div class="login-card w-full max-w-md p-10 shadow-2xl">
-            <div class="flex gap-8 mb-10 border-b border-white/10 pb-4">
+            <div class="flex gap-8 mb-10 border-b border-white/10 pb-4 text-white">
                 <button id="tab-signin" onclick="toggleAuth('signin')" class="text-sm font-black uppercase tracking-widest border-b-2 border-white pb-2 transition-all">Sign In</button>
                 <button id="tab-signup" onclick="toggleAuth('signup')" class="text-sm font-black uppercase tracking-widest opacity-40 pb-2 transition-all">Sign Up</button>
             </div>
 
-            <form class="space-y-8" onsubmit="handleAuthSubmit(event)">
+            <form class="space-y-8 text-white" onsubmit="handleAuthSubmit(event)">
                 <div class="space-y-3">
                     <label class="text-[10px] font-black uppercase italic tracking-widest ml-4 opacity-80">Identitas Akun</label>
                     <div class="input-box flex items-center px-6 py-5">
                         <i class="fa-solid fa-user-shield mr-4 opacity-80"></i>
-                        <input type="text" id="input-username" placeholder="Username / Email" class="bg-transparent w-full outline-none font-bold text-sm text-white">
+                        <input type="text" id="input-username" placeholder="Username / Email" class="bg-transparent w-full outline-none font-bold text-sm text-white placeholder-white/50">
                     </div>
                 </div>
                 <div class="space-y-3">
                     <label class="text-[10px] font-black uppercase italic tracking-widest ml-4 opacity-80">Password</label>
                     <div class="input-box flex items-center px-6 py-5">
                         <i class="fa-solid fa-key mr-4 opacity-80"></i>
-                        <input type="password" id="input-password" placeholder="••••••••" class="bg-transparent w-full outline-none font-bold text-sm text-white">
+                        <input type="password" id="input-password" placeholder="••••••••" class="bg-transparent w-full outline-none font-bold text-sm text-white placeholder-white/50">
                     </div>
                 </div>
                 <div id="box-confirm" class="space-y-3 hidden">
                     <label class="text-[10px] font-black uppercase italic tracking-widest ml-4 opacity-80">Validasi Kunci</label>
                     <div class="input-box flex items-center px-6 py-5">
                         <i class="fa-solid fa-unlock-keyhole mr-4 opacity-80"></i>
-                        <input type="password" id="input-confirm" placeholder="••••••••" class="bg-transparent w-full outline-none font-bold text-sm text-white">
+                        <input type="password" id="input-confirm" placeholder="••••••••" class="bg-transparent w-full outline-none font-bold text-sm text-white placeholder-white/50">
                     </div>
                 </div>
                 <button id="btn-auth" class="bg-white text-red-900 w-full py-6 mt-4 text-[11px] font-black uppercase rounded-full shadow-xl active:scale-95 transition-all">
@@ -407,134 +435,385 @@
         </div>
     </div>
 
-    <div id="phase-dashboard" class="hidden min-h-screen p-6 animate-fadeIn space-y-6 pb-24">
-        <div class="glass-card p-6 flex flex-col gap-6">
-            <div class="flex items-center gap-4">
-                <div class="bg-white p-2 rounded-xl">
-                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSTkKQsMBae8IfrrfVsBoCXl1qG0LiuBbjvBA&s" class="h-6" alt="A">
-                </div>
-                <div class="flex-1">
-                    <h2 class="text-2xl font-black italic uppercase leading-none text-white">Account Node</h2>
-                    <p class="text-[10px] font-bold opacity-60 uppercase tracking-widest text-white">Logged as: <span id="user-display">MEMBER</span></p>
-                </div>
-            </div>
-            <div class="flex items-center justify-between bg-white/10 p-4 rounded-3xl border border-white/10">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center text-white shadow-[0_0_15px_rgba(234,179,8,0.5)]">
-                        <i class="fa-solid fa-coins"></i>
-                    </div>
-                    <div>
-                        <p class="text-[8px] font-bold opacity-60 uppercase tracking-widest">Active Balance</p>
-                        <span class="font-black text-xl count-up" id="poin-display">0</span>
-                    </div>
-                </div>
-                <button onclick="goToLanding()" class="bg-white/10 border border-white/20 rounded-2xl px-4 py-2 text-[10px] font-black uppercase flex items-center gap-2 text-white">
-                    <i class="fa-solid fa-power-off"></i> Logout
-                </button>
-            </div>
-            <a href="https://chat.whatsapp.com/EXIp6tS8kVB8aXXSR45YC5?mode=gi_t" target="_blank" class="block w-full">
-                <button class="w-full bg-white/10 border border-white/20 rounded-full py-4 text-[10px] font-black uppercase flex items-center justify-center gap-2 text-white hover:bg-white/20 transition-all">
-                    <i class="fa-solid fa-users text-blue-400"></i> JOIN COMMAND CENTER (WA)
-                </button>
-            </a>
-        </div>
-
-        <div class="grid grid-cols-2 gap-4">
-            <div class="glass-card p-5 border-b-4 border-white flex flex-col items-center justify-center gap-3 relative overflow-hidden">
-                <div class="flex items-center gap-3 relative z-10">
-                    <span class="w-2 h-2 bg-green-500 rounded-full dot-blink"></span>
-                    <div class="text-center">
-                        <p class="text-xl font-black italic text-white" id="online-users-display">30</p>
-                        <p class="text-[8px] font-bold opacity-50 uppercase text-white">Pejuang Online</p>
-                    </div>
-                </div>
-                <svg class="sparkline" viewBox="0 0 100 30"><path d="M0 25 L20 15 L40 20 L60 10 L80 18 L100 5" fill="none" stroke="white" stroke-width="2"/></svg>
-            </div>
-            <div class="glass-card p-5 border-b-4 border-white flex flex-col items-center justify-center gap-3 relative overflow-hidden">
-                <div class="flex items-center gap-3 relative z-10">
-                    <i class="fa-solid fa-fire text-orange-500"></i>
-                    <div class="text-center">
-                        <p class="text-xl font-black italic text-white" id="active-camps-display">0</p>
-                        <p class="text-[8px] font-bold opacity-50 uppercase text-white">Kampanye Aktif</p>
-                    </div>
-                </div>
-                <svg class="sparkline" viewBox="0 0 100 30"><path d="M0 5 L20 20 L40 10 L60 25 L80 15 L100 20" fill="none" stroke="white" stroke-width="2"/></svg>
-            </div>
-        </div>
-
-        <div class="glass-card p-8 text-center space-y-6 bg-gradient-to-b from-white/10 to-transparent">
-            <h3 class="text-lg font-black italic uppercase text-white">Lucky Gacha Spin</h3>
-            <p id="spin-quota-display" class="text-[10px] font-bold text-yellow-400 uppercase tracking-widest">Sisa Spin Hari Ini: 3</p>
-            <p class="text-[10px] opacity-60 text-white">Test keberuntungan Anda dengan 1 Token!</p>
-            
-            <div class="wheel-container">
-                <div class="wheel-pointer"></div>
-                <div class="wheel-center">
-                    <i class="fa-solid fa-coins"></i>
-                </div>
-                <div id="wheel">
-                    <div class="wheel-numbers">
-                        <div class="wheel-number" style="transform: rotate(30deg)">0</div>
-                        <div class="wheel-number" style="transform: rotate(90deg)">1</div>
-                        <div class="wheel-number" style="transform: rotate(150deg)">2</div>
-                        <div class="wheel-number" style="transform: rotate(210deg)">5</div>
-                        <div class="wheel-number" style="transform: rotate(270deg)">0</div>
-                        <div class="wheel-number" style="transform: rotate(330deg)">10</div>
-                    </div>
-                </div>
-            </div>
-
-            <button id="btn-spin" onclick="spinWheel()" class="bg-white text-red-900 w-full py-4 rounded-full font-black text-xs uppercase shadow-xl active:scale-95 transition-all">
-                Mulai Putaran
+    <div id="phase-dashboard" class="hidden min-h-screen animate-fadeIn pb-32">
+        
+        <div class="bg-white sticky top-0 z-40 px-6 py-4 flex items-center justify-between border-b border-gray-100 shadow-sm">
+            <button onclick="toggleSidebar()" class="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-700 text-lg shadow-sm active:scale-95 transition">
+                <i class="fa-solid fa-bars"></i>
             </button>
-        </div>
+            <div class="flex items-center gap-2">
+                <img src="https://i.imgur.com/PwmtlIn.png" alt="Logo" class="w-8 h-8 rounded-lg">
+                <h1 class="text-lg font-black italic uppercase tracking-tighter text-gray-800">Den Abi Network</h1>
+            </div>
+            <div class="w-10 h-10"></div> </div>
 
-        <div class="glass-card p-8 text-center space-y-4">
-            <h3 class="text-lg font-black italic uppercase text-white">Daily Dividend</h3>
-            <p class="text-[10px] opacity-60 text-white">Ambil jatah token harian Anda.</p>
-            <button id="btn-claim-daily" onclick="claimDailyBonus()" class="bg-white/10 border-2 border-white/30 w-full py-4 rounded-full font-black text-xs uppercase shadow-xl active:scale-95 transition text-white">Klaim Daily Reward (+2)</button>
-        </div>
+        <div id="tab-panel" class="p-6 space-y-6">
+            <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col gap-6">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center overflow-hidden border-2 border-blue-200">
+                        <img src="" id="dashboard-avatar" class="w-full h-full object-cover">
+                    </div>
+                    <div class="flex-1">
+                        <h2 class="text-lg font-black italic uppercase leading-none text-gray-800" id="user-display">MEMBER</h2>
+                        <p class="text-[10px] font-bold opacity-60 uppercase tracking-widest text-gray-500">Premium Node</p>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between bg-gray-50 p-4 rounded-2xl border border-gray-200">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center text-white shadow-lg">
+                            <i class="fa-solid fa-coins"></i>
+                        </div>
+                        <div>
+                            <p class="text-[8px] font-bold opacity-60 uppercase tracking-widest text-gray-500">Active Balance</p>
+                            <span class="font-black text-xl count-up text-gray-800" id="poin-display">0</span>
+                        </div>
+                    </div>
+                    <button onclick="switchTab('store')" class="bg-red-50 border border-red-100 text-red-700 rounded-xl px-4 py-2 text-[10px] font-black uppercase shadow-sm">
+                        Top Up
+                    </button>
+                </div>
+            </div>
 
-        <div class="glass-card p-8 space-y-6">
-            <h3 class="text-xl font-black italic uppercase flex items-center gap-3 text-white">
-                <i class="fa-solid fa-bullseye"></i> Deployment Zone
-            </h3>
-            <div class="space-y-4">
-                <div class="input-box p-4">
-                    <input type="text" id="target-web" placeholder="DIRECTLINK ADSTERRA" class="w-full bg-transparent outline-none text-sm font-bold text-white uppercase placeholder:text-white/20">
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-white p-5 rounded-3xl border-b-4 border-green-500 flex flex-col items-center justify-center gap-2 shadow-sm relative overflow-hidden">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2 h-2 bg-green-500 rounded-full dot-blink"></span>
+                        <p class="text-xl font-black italic text-gray-800" id="online-users-display">30</p>
+                    </div>
+                    <p class="text-[8px] font-bold uppercase text-gray-500">Pejuang Online</p>
+                </div>
+                <div class="bg-white p-5 rounded-3xl border-b-4 border-orange-500 flex flex-col items-center justify-center gap-2 shadow-sm relative overflow-hidden">
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-fire text-orange-500"></i>
+                        <p class="text-xl font-black italic text-gray-800" id="active-camps-display">0</p>
+                    </div>
+                    <p class="text-[8px] font-bold uppercase text-gray-500">Kampanye Aktif</p>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 space-y-4 relative overflow-hidden">
+                <div class="flex items-center gap-2 border-b border-gray-100 pb-3">
+                    <i class="fa-solid fa-satellite-dish text-blue-500"></i>
+                    <h3 class="text-sm font-black italic uppercase text-gray-800">Live Monitoring</h3>
                 </div>
                 
-                <div class="flex justify-between items-center px-2">
-                    <span class="text-[10px] font-black uppercase italic opacity-60">Target Nodes</span>
-                    <span class="text-xl font-black italic" id="view-val">1 Node</span>
-                </div>
-                <input type="range" id="view-range" min="1" max="1000" step="1" value="1" oninput="document.getElementById('view-val').innerText = this.value + ' Node'" class="mb-4">
-                
-                <button onclick="handleDeployCampaign()" class="bg-white text-red-900 w-full py-6 text-[11px] font-black uppercase rounded-full shadow-2xl active:scale-95 transition">
-                    Deploy Campaign
-                </button>
-
-                <div id="campaign-monitor" class="hidden mt-8 pt-6 border-t border-white/10 space-y-4">
+                <div id="campaign-monitor" class="hidden mt-2 space-y-4">
                     <div class="flex justify-between items-end">
                         <div>
-                            <p class="text-[10px] font-black uppercase italic opacity-60 text-white">Transmission Active</p>
-                            <h4 class="text-sm font-black text-white italic">PROSES PUSH DOLAR...</h4>
+                            <p class="text-[10px] font-black uppercase italic text-gray-500">Transmission Active</p>
+                            <h4 class="text-xs font-black text-blue-600 italic mt-1">PROSES PUSH DOLAR...</h4>
                         </div>
                         <div class="text-right">
-                            <span id="progress-text" class="text-xl font-black italic text-white">0/0</span>
+                            <span id="progress-text" class="text-xl font-black italic text-gray-800">0/0</span>
                         </div>
                     </div>
-                    <div class="w-full h-3 bg-black/20 rounded-full overflow-hidden border border-white/10">
-                        <div id="progress-bar-fill" class="h-full bg-white rounded-full transition-all duration-1000" style="width: 0%"></div>
+                    <div class="w-full h-3 bg-gray-100 rounded-full overflow-hidden border border-gray-200">
+                        <div id="progress-bar-fill" class="h-full bg-blue-500 rounded-full transition-all duration-1000" style="width: 0%"></div>
                     </div>
+                </div>
+
+                <div id="campaign-empty" class="py-6 text-center">
+                    <i class="fa-solid fa-box-open text-4xl text-gray-200 mb-3 block"></i>
+                    <p class="text-xs font-bold text-gray-400">Belum ada kampanye aktif.</p>
                 </div>
             </div>
         </div>
 
-        <div class="glass-card p-8 text-center space-y-6">
-            <div class="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto border-2 border-white/20"><i class="fa-solid fa-bolt text-2xl text-white"></i></div>
-            <h3 class="text-xl font-black italic uppercase text-white">Mining Token</h3>
-            <button onclick="startFarmingProcess()" class="bg-white/10 border-2 border-white/30 w-full py-5 rounded-full font-black text-xs uppercase shadow-xl active:scale-95 transition text-white">Mulai Cari Poin Sekarang</button>
+        <div id="tab-earn" class="hidden p-6 space-y-6">
+            <div class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 text-center space-y-5">
+                <div class="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto border border-blue-100">
+                    <i class="fa-solid fa-bolt text-2xl text-blue-500"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-black italic uppercase text-gray-800">Mining Token</h3>
+                    <p class="text-[10px] text-gray-500 mt-2">Dapatkan token dengan mengunjungi link member lain.</p>
+                </div>
+                <button onclick="startFarmingProcess()" class="bg-blue-600 text-white w-full py-4 rounded-full font-black text-xs uppercase shadow-lg shadow-blue-600/30 active:scale-95 transition">
+                    Mulai Cari Poin Sekarang
+                </button>
+            </div>
+
+            <div class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 text-center space-y-4">
+                <h3 class="text-lg font-black italic uppercase text-gray-800">Lucky Gacha Spin</h3>
+                <p id="spin-quota-display" class="text-[10px] font-bold text-orange-500 uppercase tracking-widest bg-orange-50 inline-block px-3 py-1 rounded-full">Sisa Spin: 3</p>
+                
+                <div class="wheel-container my-6">
+                    <div class="wheel-pointer"></div>
+                    <div class="wheel-center">
+                        <i class="fa-solid fa-coins"></i>
+                    </div>
+                    <div id="wheel">
+                        <div class="wheel-numbers">
+                            <div class="wheel-number" style="transform: rotate(30deg)">0</div>
+                            <div class="wheel-number" style="transform: rotate(90deg)">1</div>
+                            <div class="wheel-number" style="transform: rotate(150deg)">2</div>
+                            <div class="wheel-number" style="transform: rotate(210deg)">5</div>
+                            <div class="wheel-number" style="transform: rotate(270deg)">0</div>
+                            <div class="wheel-number" style="transform: rotate(330deg)">10</div>
+                        </div>
+                    </div>
+                </div>
+
+                <button id="btn-spin" onclick="spinWheel()" class="bg-red-700 text-white w-full py-4 rounded-full font-black text-xs uppercase shadow-lg shadow-red-700/30 active:scale-95 transition">
+                    Mulai Putaran (1 Token)
+                </button>
+            </div>
+
+            <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 text-center flex items-center justify-between">
+                <div class="text-left">
+                    <h3 class="text-sm font-black italic uppercase text-gray-800">Daily Dividend</h3>
+                    <p class="text-[10px] text-gray-500">Ambil jatah token harian.</p>
+                </div>
+                <button id="btn-claim-daily" onclick="claimDailyBonus()" class="bg-green-50 text-green-600 border border-green-200 px-4 py-3 rounded-xl font-black text-xs uppercase shadow-sm active:scale-95 transition">
+                    Klaim (+2)
+                </button>
+            </div>
+        </div>
+
+        <div id="tab-store" class="hidden p-6 space-y-6">
+            <h3 class="text-xl font-black italic uppercase text-gray-800 flex items-center gap-2">
+                <i class="fa-solid fa-store text-red-600"></i> Token Store
+            </h3>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 text-center relative">
+                    <div class="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fa-solid fa-coins text-2xl text-yellow-500"></i>
+                    </div>
+                    <h4 class="font-black text-gray-800 text-lg">100 Token</h4>
+                    <p class="text-[10px] text-gray-500 font-bold bg-gray-100 rounded block mt-1 mb-4">Bonus +10</p>
+                    <button class="bg-gray-800 text-white w-full py-2.5 rounded-xl text-xs font-bold active:scale-95 transition" onclick="buyToken(100, 15000)">Rp 15.000</button>
+                </div>
+                
+                <div class="bg-yellow-50 p-5 rounded-3xl shadow-md border border-yellow-200 text-center relative overflow-hidden">
+                    <div class="absolute top-0 right-0 bg-yellow-500 text-white text-[8px] font-black px-3 py-1 rounded-bl-xl">POPULER</div>
+                    <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center mx-auto mb-3 shadow-sm">
+                        <i class="fa-solid fa-sack-dollar text-2xl text-yellow-500"></i>
+                    </div>
+                    <h4 class="font-black text-gray-800 text-lg">500 Token</h4>
+                    <p class="text-[10px] text-yellow-700 font-bold bg-yellow-100 rounded block mt-1 mb-4">Bonus +100</p>
+                    <button class="bg-red-700 text-white w-full py-2.5 rounded-xl text-xs font-bold shadow-lg shadow-red-700/30 active:scale-95 transition" onclick="buyToken(500, 50000)">Rp 50.000</button>
+                </div>
+
+                <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 text-center relative col-span-2">
+                    <div class="flex items-center justify-between text-left mb-4">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center">
+                                <i class="fa-solid fa-gem text-2xl text-blue-500"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-black text-gray-800 text-xl">1000 Token</h4>
+                                <p class="text-[10px] text-gray-500 font-bold">Paket Sultan (Bonus +250)</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <button class="bg-gray-800 text-white px-6 py-3 rounded-xl text-xs font-bold active:scale-95 transition" onclick="buyToken(1000, 90000)">Rp 90.000</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 mt-4">
+                <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 text-center relative">
+                    <div class="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fa-solid fa-gem text-2xl text-purple-500"></i>
+                    </div>
+                    <h4 class="font-black text-gray-800 text-lg">5000 Token</h4>
+                    <p class="text-[10px] text-gray-500 font-bold bg-gray-100 rounded block mt-1 mb-4">Bonus +1500</p>
+                    <button class="bg-gray-800 text-white w-full py-2.5 rounded-xl text-xs font-bold active:scale-95 transition" onclick="buyToken(5000, 400000)">Rp 400.000</button>
+                </div>
+                <div class="bg-gradient-to-br from-gray-800 to-black p-5 rounded-3xl shadow-md border border-gray-700 text-center relative overflow-hidden">
+                    <div class="absolute top-0 right-0 bg-yellow-500 text-black text-[8px] font-black px-3 py-1 rounded-bl-xl">VIP</div>
+                    <div class="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-3 shadow-sm">
+                        <i class="fa-solid fa-crown text-2xl text-yellow-400"></i>
+                    </div>
+                    <h4 class="font-black text-white text-lg">10.000 Token</h4>
+                    <p class="text-[10px] text-yellow-400 font-bold bg-white/10 rounded block mt-1 mb-4">Max Bonus</p>
+                    <button class="bg-yellow-500 text-black w-full py-2.5 rounded-xl text-xs font-bold shadow-lg shadow-yellow-500/30 active:scale-95 transition" onclick="buyToken(10000, 750000)">Rp 750.000</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black/60 z-[200] hidden transition-opacity" onclick="toggleSidebar()"></div>
+    <div id="sidebar" class="fixed top-0 left-0 w-[280px] h-full bg-white z-[210] transform -translate-x-full transition-transform duration-300 shadow-2xl flex flex-col">
+        <div class="bg-blue-600 p-6 flex items-center gap-4 text-white rounded-br-[40px] shadow-lg">
+            <div class="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center overflow-hidden border-2 border-white/50">
+                <img src="" id="sidebar-avatar" class="w-full h-full object-cover">
+            </div>
+            <div>
+                <p class="font-black text-lg" id="sidebar-name">MEMBER</p>
+                <p class="text-[10px] opacity-80" id="sidebar-email">user@denabi.com</p>
+            </div>
+        </div>
+        <div class="flex-1 overflow-y-auto py-6">
+            <ul class="space-y-2 px-4">
+                <li><a href="javascript:void(0)" onclick="switchTab('store'); toggleSidebar()" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-gray-700 hover:bg-gray-50 transition"><div class="w-8 flex justify-center"><i class="fa-solid fa-coins text-yellow-500 text-lg"></i></div> <span class="text-sm font-bold">Beli Koin</span></a></li>
+                <li><a href="javascript:void(0)" onclick="shareApp(); toggleSidebar()" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-gray-700 hover:bg-gray-50 transition"><div class="w-8 flex justify-center"><i class="fa-solid fa-share-nodes text-blue-500 text-lg"></i></div> <span class="text-sm font-bold">Bagikan Website</span></a></li>
+                <li><a href="javascript:void(0)" onclick="showToast('Bahasa diatur ke Indonesia'); toggleSidebar()" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-gray-700 hover:bg-gray-50 transition"><div class="w-8 flex justify-center"><i class="fa-solid fa-language text-green-500 text-lg"></i></div> <span class="text-sm font-bold">Ganti Bahasa</span></a></li>
+                <li><a href="javascript:void(0)" onclick="toggleGuide(); toggleSidebar()" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-gray-700 hover:bg-gray-50 transition"><div class="w-8 flex justify-center"><i class="fa-solid fa-book text-purple-500 text-lg"></i></div> <span class="text-sm font-bold">Panduan & FAQ</span></a></li>
+                <li><a href="https://chat.whatsapp.com/DYrWGRJxczd7gPrmklg1Bu?mode=gi_t" target="_blank" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-gray-700 hover:bg-gray-50 transition"><div class="w-8 flex justify-center"><i class="fa-brands fa-whatsapp text-green-600 text-lg"></i></div> <span class="text-sm font-bold">Grup WA Support</span></a></li>
+                <li><a href="https://chat.whatsapp.com/EXIp6tS8kVB8aXXSR45YC5?mode=gi_t" target="_blank" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-gray-700 hover:bg-gray-50 transition"><div class="w-8 flex justify-center"><i class="fa-solid fa-store text-orange-500 text-lg"></i></div> <span class="text-sm font-bold">Den Abi App Store</span></a></li>
+                <li><a href="https://wa.me/6282230780449" target="_blank" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-gray-700 hover:bg-gray-50 transition"><div class="w-8 flex justify-center"><i class="fa-solid fa-headset text-red-500 text-lg"></i></div> <span class="text-sm font-bold">Hubungi Admin</span></a></li>
+            </ul>
+        </div>
+        <div class="p-6 border-t border-gray-100">
+            <button onclick="goToLanding()" class="w-full py-4 bg-red-50 text-red-600 rounded-2xl font-bold flex items-center justify-center gap-2 active:scale-95 transition">
+                <i class="fa-solid fa-power-off"></i> Logout Account
+            </button>
+        </div>
+    </div>
+
+    <div id="bottom-nav" class="fixed bottom-0 left-0 w-full bg-white border-t border-gray-100 z-[100] px-6 py-2 pb-6 shadow-[0_-5px_15px_rgba(0,0,0,0.02)] hidden">
+        <div class="flex justify-between items-end relative h-14">
+            <button onclick="switchTab('panel')" class="flex flex-col items-center gap-1 w-12 text-red-700 transition-colors" id="nav-panel">
+                <i class="fa-solid fa-chart-pie text-xl"></i>
+                <span class="text-[9px] font-black uppercase">Panel</span>
+            </button>
+            <button onclick="startFarmingProcess()" class="flex flex-col items-center gap-1 w-12 text-gray-400 transition-colors">
+                <i class="fa-solid fa-eye text-xl"></i>
+                <span class="text-[9px] font-black uppercase">Melihat</span>
+            </button>
+            
+            <div class="relative -top-5">
+                <button onclick="toggleCampaignModal()" class="w-14 h-14 bg-red-700 text-white rounded-full flex items-center justify-center text-2xl shadow-xl shadow-red-700/40 active:scale-95 transition transform hover:-translate-y-1 border-4 border-white">
+                    <i class="fa-solid fa-plus"></i>
+                </button>
+            </div>
+
+            <button onclick="switchTab('earn')" class="flex flex-col items-center gap-1 w-12 text-gray-400 transition-colors" id="nav-earn">
+                <i class="fa-solid fa-gift text-xl"></i>
+                <span class="text-[9px] font-black uppercase">Earn</span>
+            </button>
+            <button onclick="switchTab('store')" class="flex flex-col items-center gap-1 w-12 text-gray-400 transition-colors" id="nav-store">
+                <i class="fa-solid fa-cart-shopping text-xl"></i>
+                <span class="text-[9px] font-black uppercase">Store</span>
+            </button>
+        </div>
+    </div>
+
+    <div id="modal-campaign-overlay" class="fixed inset-0 bg-black/60 z-[300] hidden transition-opacity backdrop-blur-sm" onclick="toggleCampaignModal()"></div>
+    <div id="modal-campaign" class="fixed bottom-0 left-0 w-full bg-white z-[310] rounded-t-[40px] transform translate-y-full transition-transform duration-300 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] flex flex-col p-6 max-h-[90vh] overflow-y-auto">
+        <div class="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mb-6 cursor-pointer" onclick="toggleCampaignModal()"></div>
+        <h3 class="text-xl font-black italic uppercase text-gray-800 mb-6 flex items-center gap-2">
+            <i class="fa-solid fa-bullseye text-red-600"></i> Deploy Adsterra
+        </h3>
+        
+        <div class="space-y-6 pb-6">
+            <div class="bg-gray-50 border border-gray-200 rounded-2xl p-4">
+                <label class="text-[10px] font-black uppercase text-gray-500 mb-2 block">Directlink Url</label>
+                <input type="text" id="target-web" placeholder="https://..." class="w-full bg-transparent outline-none text-sm font-bold text-gray-800">
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div class="border-2 border-green-500 bg-green-50 p-3 rounded-xl flex items-center gap-3">
+                    <i class="fa-solid fa-bolt text-green-500 text-lg"></i>
+                    <div class="leading-tight">
+                        <span class="text-[10px] font-black text-gray-800 block uppercase">High CPM</span>
+                        <span class="text-[8px] text-gray-500 font-bold uppercase">Premium IP</span>
+                    </div>
+                </div>
+                <div class="border-2 border-blue-500 bg-blue-50 p-3 rounded-xl flex items-center gap-3">
+                    <i class="fa-solid fa-shield-halved text-blue-500 text-lg"></i>
+                    <div class="leading-tight">
+                        <span class="text-[10px] font-black text-gray-800 block uppercase">Anti-Bounce</span>
+                        <span class="text-[8px] text-gray-500 font-bold uppercase">Stay 60s Wajib</span>
+                    </div>
+                </div>
+                <div class="border-2 border-purple-500 bg-purple-50 p-3 rounded-xl flex items-center gap-3">
+                    <i class="fa-solid fa-link text-purple-500 text-lg"></i>
+                    <div class="leading-tight">
+                        <span class="text-[10px] font-black text-gray-800 block uppercase">Smart Ref</span>
+                        <span class="text-[8px] text-gray-500 font-bold uppercase">Social/Organic</span>
+                    </div>
+                </div>
+                <div class="border-2 border-orange-500 bg-orange-50 p-3 rounded-xl flex items-center gap-3">
+                    <i class="fa-solid fa-rocket text-orange-500 text-lg"></i>
+                    <div class="leading-tight">
+                        <span class="text-[10px] font-black text-gray-800 block uppercase">Direct Boost</span>
+                        <span class="text-[8px] text-gray-500 font-bold uppercase">Anti-Spam Klik</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="pt-2">
+                <div class="flex justify-between items-center px-2 mb-2">
+                    <span class="text-[10px] font-black uppercase italic text-gray-500">Target Nodes (Views)</span>
+                    <span class="text-xl font-black italic text-gray-800" id="view-val">1 Node</span>
+                </div>
+                <input type="range" id="view-range" min="1" max="1000" step="1" value="1" oninput="document.getElementById('view-val').innerText = this.value + ' Node'" class="light-theme-range w-full mb-6">
+                
+                <button onclick="handleDeployWrapper()" class="bg-red-700 text-white w-full py-5 text-[11px] font-black uppercase rounded-full shadow-lg shadow-red-700/30 active:scale-95 transition">
+                    Deploy Campaign
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="qrisModal" class="fixed inset-0 bg-black/60 z-[3000] hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+        <div class="w-full max-w-sm bg-white rounded-3xl p-8 text-center shadow-2xl relative">
+            <button onclick="closeQrisModal()" class="absolute top-4 right-4 w-8 h-8 bg-gray-100 rounded-full text-gray-600 flex items-center justify-center font-bold">X</button>
+            <h3 class="font-black italic text-xl uppercase mb-2 text-red-900 tracking-tighter">Pembayaran QRIS</h3>
+            <p class="text-[10px] text-gray-500 font-bold mb-6">Scan QR di bawah menggunakan e-Wallet / m-Banking Anda.</p>
+            
+            <div class="bg-gray-50 p-4 rounded-2xl border border-gray-200 mb-6 inline-block">
+                <img src="https://i.ibb.co.com/xKdbypvg/G720077082-0703-A01-default-1.png" alt="QRIS Den Abi" class="w-48 h-auto rounded-xl shadow-sm mx-auto">
+            </div>
+
+            <div class="bg-red-50 p-4 rounded-xl border border-red-100 mb-6 text-left">
+                <p class="text-[10px] font-black text-red-800 uppercase mb-1">Detail Order:</p>
+                <p class="text-sm font-bold text-gray-800" id="qris-detail-pack">Paket: 0 Token</p>
+                <p class="text-sm font-bold text-red-600" id="qris-detail-price">Total: Rp 0</p>
+            </div>
+
+            <div class="space-y-3">
+                <p class="text-[9px] text-gray-500 font-bold leading-relaxed text-left pl-2">
+                    1. Scan & bayar sesuai nominal.<br>
+                    2. Screenshot bukti pembayaran.<br>
+                    3. Klik konfirmasi di bawah untuk kirim bukti ke Admin.
+                </p>
+                <button onclick="confirmQrisPayment()" class="w-full py-4 bg-green-600 text-white font-black uppercase rounded-xl shadow-lg shadow-green-600/30 active:scale-95 transition flex items-center justify-center gap-2">
+                    <i class="fa-brands fa-whatsapp text-lg"></i> Konfirmasi Pembayaran
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="guideModal" class="fixed inset-0 bg-black/60 z-[3000] hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+        <div class="w-full max-w-sm bg-white rounded-3xl p-8 text-center shadow-2xl relative">
+            <button onclick="toggleGuide()" class="absolute top-4 right-4 w-8 h-8 bg-gray-100 rounded-full text-gray-600 flex items-center justify-center font-bold">X</button>
+            <h3 class="font-black italic text-xl uppercase mb-6 text-red-900 tracking-tighter">Buku Panduan</h3>
+            
+            <div class="space-y-6 text-left text-gray-700 h-[50vh] overflow-y-auto pr-2">
+                <div class="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                    <h4 class="font-black text-sm mb-2 text-gray-800"><i class="fa-solid fa-1 text-red-600 mr-2"></i>Kumpulkan Token</h4>
+                    <p class="text-[11px] font-bold leading-relaxed text-gray-600">Buka menu <b>Earn</b> di navigasi bawah. Klik "Mulai Cari Poin Sekarang". Kunjungi link Adsterra member lain selama 60 detik.</p>
+                </div>
+                
+                <div class="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                    <h4 class="font-black text-sm mb-2 text-gray-800"><i class="fa-solid fa-2 text-red-600 mr-2"></i>Verifikasi Human Traffic</h4>
+                    <p class="text-[11px] font-bold leading-relaxed text-gray-600">Saat muncul instruksi "Wajib Klik Iklan", silakan klik salah satu area iklan agar impresi Adsterra valid, lalu klaim token.</p>
+                </div>
+
+                <div class="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                    <h4 class="font-black text-sm mb-2 text-gray-800"><i class="fa-solid fa-3 text-red-600 mr-2"></i>Deploy Kampanye</h4>
+                    <p class="text-[11px] font-bold leading-relaxed text-gray-600">Klik tombol <b>[+]</b> warna merah di tengah. Masukkan URL Directlink Adsterra Anda, tentukan jumlah Views, lalu Deploy. (Min: 100 Token)</p>
+                </div>
+
+                <div class="mt-6 border-t border-gray-200 pt-4">
+                    <h4 class="font-black italic text-lg uppercase mb-4 text-gray-800">FAQ</h4>
+                    <div class="mb-4">
+                        <p class="font-black text-xs text-gray-800 mb-1">Q: Kenapa wajib klik iklan?</p>
+                        <p class="text-[11px] text-gray-600 font-bold">A: Agar Adsterra mendeteksi trafik sebagai manusia asli. Ini meningkatkan CPM dan mengamankan akun.</p>
+                    </div>
+                    <div class="mb-4">
+                        <p class="font-black text-xs text-gray-800 mb-1">Q: Apakah aman dari banned?</p>
+                        <p class="text-[11px] text-gray-600 font-bold">A: Sangat aman! Sistem menggunakan fitur Smart Referrer sehingga trafik terlihat organik dari social media.</p>
+                    </div>
+                </div>
+            </div>
+            <button onclick="toggleGuide()" class="w-full mt-6 py-4 bg-red-900 text-white font-black uppercase rounded-full shadow-lg active:scale-95 transition">SAYA PAHAM</button>
         </div>
     </div>
 
@@ -549,10 +828,10 @@
                 <span class="text-[8px] font-black">SEC</span>
             </div>
             <div class="ml-3">
-                <button onclick="stopFarming()" class="bg-black/20 px-3 py-2 rounded-lg text-[10px] font-black uppercase">EXIT</button>
+                <button onclick="stopFarming()" class="bg-black/20 px-3 py-2 rounded-lg text-[10px] font-black uppercase text-white hover:bg-black/40">EXIT</button>
             </div>
         </div>
-        <div class="flex-1 relative bg-white">
+        <div class="flex-1 relative bg-white h-[calc(100vh-140px)]">
             <iframe id="ads-frame" src="about:blank" class="w-full h-full border-none" allow="autoplay; fullscreen" sandbox="allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-top-navigation-by-user-activation"></iframe>
             <div id="click-overlay" class="click-overlay hidden" onclick="handleInternalClick()">
                 <div class="float mb-4"><i class="fa-solid fa-hand-pointer text-6xl"></i></div>
@@ -560,41 +839,27 @@
                 <p class="text-[10px] mt-4 tracking-[0.4em] font-bold uppercase text-white px-6">Wajib klik iklan di dalam untuk verifikasi</p>
             </div>
         </div>
-        <div class="bg-gray-100 border-t border-gray-200 w-full">
-            <div class="p-6 text-center">
-                <button id="btn-claim-poin" onclick="finishFarming()" disabled class="w-full py-5 bg-gray-300 text-gray-500 rounded-3xl font-black uppercase text-xs tracking-widest transition-all">Selesaikan Visit...</button>
-            </div>
+        <div class="bg-gray-100 border-t border-gray-200 w-full absolute bottom-0 h-[70px] flex items-center px-6">
+            <button id="btn-claim-poin" onclick="finishFarming()" disabled class="w-full py-4 bg-gray-300 text-gray-500 rounded-3xl font-black uppercase text-xs tracking-widest transition-all">Selesaikan Visit...</button>
         </div>
     </div>
 
-    <div class="fixed bottom-6 right-6 z-[100]">
-        <a href="https://chat.whatsapp.com/EXIp6tS8kVB8aXXSR45YC5?mode=gi_t" target="_blank">
-            <button class="w-14 h-14 bg-white text-red-800 rounded-full shadow-2xl flex items-center justify-center text-2xl float"><i class="fa-solid fa-headset"></i></button>
-        </a>
-    </div>
-
  <script>
-window.stopFarming = function() {
-    if (confirm("Apakah Anda yakin ingin menghentikan mining? Progres poin saat ini akan hilang.")) {
-        // Hentikan timer jika sedang berjalan
-        clearInterval(timerInterval);
+        let adClickCount = 0;
+        let isTimerPaused = false;
         
-        // Kosongkan src iframe agar tidak berat
-        $('ads-frame').src = "about:blank";
-        
-        // Sembunyikan overlay jika ada
-        $('click-overlay').classList.add('hidden');
-        
-        // Kembali ke dashboard
-        showPhase('phase-dashboard');
-        
-        // Update status kampanye terbaru
-        refreshCampaignStatus();
-        
-        // Munculkan notifikasi penutup
-        showToast("Mining Dihentikan", "fa-circle-info");
-    }
-};
+        window.stopFarming = function() {
+            if (confirm("Apakah Anda yakin ingin menghentikan mining? Progres poin saat ini akan hilang.")) {
+                clearInterval(timerInterval);
+                $('ads-frame').src = "about:blank";
+                $('click-overlay').classList.add('hidden');
+                window.removeEventListener('blur', handleWindowBlur);
+                showPhase('phase-dashboard');
+                refreshCampaignStatus();
+                showToast("Mining Dihentikan", "fa-circle-info");
+            }
+        };
+
         const API_URL = "https://quiet-poetry-4ac5.denabidin97.workers.dev";
         const $ = (id) => document.getElementById(id);
 
@@ -604,7 +869,6 @@ window.stopFarming = function() {
         let currentWorkingId = null;
         let currentPhase = 'phase-landing';
 
-        // --- NEW AUDIO & NOTIFICATION SYSTEM ---
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
         function playSound(type) {
@@ -649,7 +913,6 @@ window.stopFarming = function() {
             }, 3000);
         }
 
-        // --- BACKGROUND MATRIX ---
         const canvas = $('matrix-canvas');
         const ctx = canvas.getContext('2d');
         function initMatrix() {
@@ -673,16 +936,14 @@ window.stopFarming = function() {
         }
         initMatrix();
 
-        // --- LUCKY SPIN LOGIC ---
         let isSpinning = false;
         
-        // Fungsi untuk mengelola kuota spin harian
         function getSpinQuota() {
             const today = new Date().toDateString();
             const savedData = JSON.parse(localStorage.getItem('denabi_spin_data') || '{}');
             
             if (savedData.date !== today) {
-                return 3; // Reset kuota jika hari baru
+                return 3; 
             }
             return savedData.count ?? 3;
         }
@@ -693,7 +954,7 @@ window.stopFarming = function() {
                 date: today,
                 count: count
             }));
-            if($('spin-quota-display')) $('spin-quota-display').innerText = `Sisa Spin Hari Ini: ${count}`;
+            if($('spin-quota-display')) $('spin-quota-display').innerText = `Sisa Spin: ${count}`;
         }
 
         async function spinWheel() {
@@ -732,7 +993,7 @@ window.stopFarming = function() {
                     });
                     const data = await res.json();
                     if(data.success) {
-                        updateSpinQuota(quota - 1); // Kurangi kuota sukses
+                        updateSpinQuota(quota - 1);
                         if(reward > 0) { playSound('coin'); showToast(`WIN! ${reward} Token Added!`); }
                         else { showToast("Maaf, Zonk!", "fa-face-frown"); }
                         animateValue('poin-display', currentPoin, data.newPoin);
@@ -748,13 +1009,139 @@ window.stopFarming = function() {
             }, 4000);
         }
 
-        // --- AUTH & NAVIGATION ---
+        window.toggleSidebar = function() {
+            const sidebar = $('sidebar');
+            const overlay = $('sidebar-overlay');
+            if(sidebar.classList.contains('-translate-x-full')) {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
+            }
+        };
+
+        window.switchTab = function(tabId) {
+            ['panel', 'earn', 'store'].forEach(t => {
+                $('tab-' + t).classList.add('hidden');
+                if($('nav-' + t)) {
+                    $('nav-' + t).classList.remove('text-red-700');
+                    $('nav-' + t).classList.add('text-gray-400');
+                }
+            });
+            $('tab-' + tabId).classList.remove('hidden');
+            if($('nav-' + tabId)) {
+                $('nav-' + tabId).classList.add('text-red-700');
+                $('nav-' + tabId).classList.remove('text-gray-400');
+            }
+            window.scrollTo(0, 0);
+        };
+
+        window.toggleCampaignModal = function() {
+            const modal = $('modal-campaign');
+            const overlay = $('modal-campaign-overlay');
+            if(modal.classList.contains('translate-y-full')) {
+                modal.classList.remove('translate-y-full');
+                overlay.classList.remove('hidden');
+            } else {
+                modal.classList.add('translate-y-full');
+                overlay.classList.add('hidden');
+            }
+        };
+
+        const campaignModal = $('modal-campaign');
+        let touchStartY = 0;
+        campaignModal.addEventListener('touchstart', e => {
+            touchStartY = e.touches[0].clientY;
+        }, {passive: true});
+        campaignModal.addEventListener('touchmove', e => {
+            const touchCurrentY = e.touches[0].clientY;
+            if (touchCurrentY - touchStartY > 50 && campaignModal.scrollTop <= 0) {
+                if (!campaignModal.classList.contains('translate-y-full')) {
+                    toggleCampaignModal();
+                    touchStartY = touchCurrentY;
+                }
+            }
+        }, {passive: true});
+
+        window.shareApp = function() {
+            const shareData = {
+                title: 'Den Abi Network',
+                text: 'Join Den Abi Network untuk Panen Dolar Adsterra! Cara tercepat tanpa bot.',
+                url: window.location.href,
+            };
+            if (navigator.share) {
+                navigator.share(shareData).catch(console.error);
+            } else {
+                navigator.clipboard.writeText(window.location.href).then(() => {
+                    showToast("Link Website Disalin!", "fa-copy");
+                }).catch(() => {
+                    showToast("Gagal menyalin link.", "fa-circle-xmark");
+                });
+            }
+        };
+
+        window.toggleGuide = function() {
+            const modal = $('guideModal');
+            if(modal.style.display === 'flex' || !modal.classList.contains('hidden')) {
+                modal.classList.add('hidden');
+                modal.style.display = 'none';
+            } else {
+                modal.classList.remove('hidden');
+                modal.style.display = 'flex';
+                playSound('tick');
+            }
+        };
+
+        let currentOrderAmount = 0;
+        let currentOrderPrice = 0;
+
+        window.buyToken = (amount, price) => {
+            currentOrderAmount = amount;
+            currentOrderPrice = price;
+            
+            $('qris-detail-pack').innerText = `Paket: ${amount.toLocaleString('id-ID')} Token`;
+            $('qris-detail-price').innerText = `Total: Rp ${price.toLocaleString('id-ID')}`;
+            
+            $('qrisModal').classList.remove('hidden');
+            $('qrisModal').style.display = 'flex';
+            playSound('tick');
+        };
+
+        window.closeQrisModal = () => {
+            $('qrisModal').classList.add('hidden');
+            $('qrisModal').style.display = 'none';
+            playSound('tick');
+        };
+
+        window.confirmQrisPayment = () => {
+            const msg = `Halo Admin Den Abi, Saya ingin konfirmasi pembayaran koin:\n- Paket: ${currentOrderAmount.toLocaleString('id-ID')} Token\n- Harga: Rp ${currentOrderPrice.toLocaleString('id-ID')}\n- User: ${localStorage.getItem('username')}\n\nBerikut saya lampirkan bukti screenshot pembayarannya.`;
+            window.open(`https://wa.me/6282230780449?text=${encodeURIComponent(msg)}`, '_blank');
+            closeQrisModal();
+        };
+
         window.showPhase = function(id) {
             const phases = ['phase-landing', 'phase-login', 'phase-dashboard', 'phase-viewer'];
             phases.forEach(p => $(p).classList.add('hidden'));
             $(id).classList.remove('hidden');
             currentPhase = id;
             window.scrollTo(0, 0);
+
+            if (id === 'phase-dashboard') {
+                document.body.classList.add('bg-dashboard-light');
+                $('matrix-canvas').style.opacity = '0';
+                if($('bottom-nav')) $('bottom-nav').classList.remove('hidden');
+            } else if (id === 'phase-viewer') {
+                document.body.classList.remove('bg-dashboard-light');
+                document.body.style.backgroundColor = '#ffffff';
+                $('matrix-canvas').style.opacity = '0';
+                if($('bottom-nav')) $('bottom-nav').classList.add('hidden');
+            } else {
+                document.body.classList.remove('bg-dashboard-light');
+                document.body.style.backgroundColor = '';
+                $('matrix-canvas').style.opacity = '0.15';
+                if($('bottom-nav')) $('bottom-nav').classList.add('hidden');
+            }
         };
 
         window.goToLogin = () => showPhase('phase-login');
@@ -763,15 +1150,24 @@ window.stopFarming = function() {
         window.onload = function() {
             if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark-mode');
             
-            // Inisialisasi tampilan kuota spin
             updateSpinQuota(getSpinQuota());
             
             const savedUser = localStorage.getItem('denabi_username');
             const isLoggedIn = localStorage.getItem('isLoggedIn');
             const token = localStorage.getItem('denabi_token');
             if (isLoggedIn === 'true' && savedUser) {
-                $('user-display').innerText = savedUser.toUpperCase();
+                
+                const userUpper = savedUser.toUpperCase();
+                if($('user-display')) $('user-display').innerText = userUpper;
+                if($('sidebar-name')) $('sidebar-name').innerText = userUpper;
+                if($('sidebar-email')) $('sidebar-email').innerText = savedUser + '@denabi.com';
+                
+                const avatarUrl = `https://ui-avatars.com/api/?name=${savedUser}&background=random&color=fff&bold=true`;
+                if($('dashboard-avatar')) $('dashboard-avatar').src = avatarUrl;
+                if($('sidebar-avatar')) $('sidebar-avatar').src = avatarUrl;
+
                 showPhase('phase-dashboard');
+                switchTab('panel');
                 refreshCampaignStatus();
                 fetch(`${API_URL}/me`, { headers: { 'Authorization': 'Bearer ' + token } })
                 .then(res => res.json())
@@ -838,6 +1234,12 @@ window.stopFarming = function() {
 
         window.updateDashboardUI = () => localStorage.setItem('denabi_poin', currentPoin);
 
+        window.handleDeployWrapper = function() {
+            handleDeployCampaign();
+            toggleCampaignModal();
+            switchTab('panel');
+        };
+
         window.handleDeployCampaign = async function() {
             const directLink = $('target-web').value.trim();
             const viewValue = parseInt($('view-range').value); 
@@ -867,11 +1269,35 @@ window.stopFarming = function() {
                 if (data.success && data.campaign) {
                     const { current, target } = data.campaign;
                     $('campaign-monitor').classList.remove('hidden');
+                    if($('campaign-empty')) $('campaign-empty').classList.add('hidden');
                     $('progress-text').innerText = `${current} / ${target}`;
                     $('progress-bar-fill').style.width = `${(current/target)*100}%`;
-                } else { $('campaign-monitor').classList.add('hidden'); }
+                } else { 
+                    $('campaign-monitor').classList.add('hidden'); 
+                    if($('campaign-empty')) $('campaign-empty').classList.remove('hidden');
+                }
             } catch (e) {}
         };
+
+        // --- CORE CLICK-THROUGH LOGIC ---
+        function handleWindowBlur() {
+            if (currentPhase === 'phase-viewer' && isTimerPaused && !$('click-overlay').classList.contains('hidden')) {
+                adClickCount++;
+                isTimerPaused = false;
+                $('click-overlay').classList.add('hidden');
+                playSound('tick');
+                showToast(`Verifikasi Klik ${adClickCount}/2 Berhasil!`, 'fa-check');
+                
+                if(timeLeft <= 0 && adClickCount >= 2) { 
+                    const b = $('btn-claim-poin'); 
+                    b.disabled = false; 
+                    b.innerText = "KLAIM TOKEN (+1)"; 
+                    b.className = "w-full py-4 bg-green-600 text-white rounded-3xl font-black uppercase text-xs tracking-widest animate-bounce cursor-pointer shadow-lg"; 
+                }
+                
+                setTimeout(() => { window.focus(); }, 500);
+            }
+        }
 
         window.startFarmingProcess = async function() {
             const token = localStorage.getItem('denabi_token');
@@ -884,6 +1310,13 @@ window.stopFarming = function() {
                     $('ads-frame').src = data.url;
                     try { $('view-target-name').innerText = new URL(data.url).hostname.toUpperCase(); } catch(e) { $('view-target-name').innerText = "NODE ACTIVE"; }
                     timeLeft = 60; $('timer-viewer').innerText = timeLeft;
+                    
+                    adClickCount = 0; 
+                    isTimerPaused = false; 
+                    $('click-overlay').classList.add('hidden');
+                    
+                    window.addEventListener('blur', handleWindowBlur);
+                    
                     startTimer();
                 }
             } catch (e) { showToast("Gagal muat!", "fa-wifi"); }
@@ -892,21 +1325,67 @@ window.stopFarming = function() {
         function startTimer() {
             clearInterval(timerInterval);
             const btnClaim = $('btn-claim-poin');
-            btnClaim.disabled = true; btnClaim.className = "w-full py-5 bg-gray-300 text-gray-500 rounded-3xl font-black uppercase text-xs";
+            btnClaim.disabled = true; 
+            btnClaim.className = "w-full py-4 bg-gray-300 text-gray-500 rounded-3xl font-black uppercase text-xs tracking-widest";
+            btnClaim.innerText = "Selesaikan Visit...";
+            
+            window.focus();
+            
             timerInterval = setInterval(() => {
-                timeLeft--; $('timer-viewer').innerText = timeLeft;
-                if ([45, 30, 15].includes(timeLeft)) $('click-overlay').classList.remove('hidden');
+                if (!isTimerPaused) {
+                    timeLeft--; 
+                    $('timer-viewer').innerText = timeLeft;
+                }
+                
+                // Tampilkan overlay di detik 40 dan 15 (2 KALI KLIK)
+                if (timeLeft === 40 && adClickCount === 0 && !isTimerPaused) {
+                    isTimerPaused = true;
+                    $('overlay-msg').innerText = "KLIK IKLAN UNTUK MELANJUTKAN WAKTU (1/2)";
+                    $('click-overlay').classList.remove('hidden');
+                    window.focus();
+                } else if (timeLeft === 15 && adClickCount === 1 && !isTimerPaused) {
+                    isTimerPaused = true;
+                    $('overlay-msg').innerText = "KLIK IKLAN UNTUK VERIFIKASI FINAL (2/2)";
+                    $('click-overlay').classList.remove('hidden');
+                    window.focus();
+                }
+                
                 if (timeLeft <= 0) {
-                    clearInterval(timerInterval); $('click-overlay').classList.add('hidden'); 
-                    btnClaim.disabled = false; btnClaim.innerText = "KLAIM TOKEN (+1)";
-                    btnClaim.className = "w-full py-5 bg-green-600 text-white rounded-3xl font-black uppercase text-xs animate-bounce cursor-pointer";
+                    clearInterval(timerInterval); 
+                    $('click-overlay').classList.add('hidden'); 
+                    
+                    if (adClickCount >= 2) {
+                        btnClaim.disabled = false; 
+                        btnClaim.innerText = "KLAIM TOKEN (+1)";
+                        btnClaim.className = "w-full py-4 bg-green-600 text-white rounded-3xl font-black uppercase text-xs tracking-widest animate-bounce cursor-pointer shadow-lg";
+                    } else {
+                        btnClaim.innerText = `KLIK IKLAN DULU (${adClickCount}/2)`;
+                    }
                 }
             }, 1000);
         }
 
-        window.handleInternalClick = () => { $('click-overlay').classList.add('hidden'); playSound('tick'); };
+        window.handleInternalClick = () => { 
+            if (isTimerPaused) {
+                adClickCount++;
+                isTimerPaused = false;
+                $('click-overlay').classList.add('hidden'); 
+                playSound('tick'); 
+                showToast(`Verifikasi Klik ${adClickCount}/2 Berhasil!`, 'fa-check'); 
+                if(timeLeft <= 0 && adClickCount >= 2) { 
+                    const b = $('btn-claim-poin'); 
+                    b.disabled = false; 
+                    b.innerText = "KLAIM TOKEN (+1)"; 
+                    b.className = "w-full py-4 bg-green-600 text-white rounded-3xl font-black uppercase text-xs tracking-widest animate-bounce cursor-pointer shadow-lg"; 
+                } 
+            }
+        };
 
         window.finishFarming = async function() {
+            if(adClickCount < 2) return showToast(`Wajib klik 2 kali! (${adClickCount}/2)`, 'fa-circle-xmark');
+            
+            window.removeEventListener('blur', handleWindowBlur);
+            
             const token = localStorage.getItem('denabi_token');
             try {
                 const res = await fetch(`${API_URL}/update-poin`, {
@@ -949,6 +1428,65 @@ window.stopFarming = function() {
         setInterval(() => { if(localStorage.getItem('isLoggedIn') === 'true' && currentPhase === 'phase-dashboard') window.refreshCampaignStatus(); }, 20000);
         setInterval(refreshGlobalStats, 30000);
         window.toggleTheme = () => document.body.classList.toggle('dark-mode');
+        /* =========================================
+   DEN ABI SECURITY SYSTEM - ANTI THEFT CODE
+   =========================================
+*/
+
+(function() {
+    // URL tujuan saat ada yang mencoba nakal
+    const redirectUrl = "https://google.com"; 
+    const warningMessage = "AKSES DITOLAK! Anda tidak diizinkan menginspeksi atau mencuri kode Den Abi Network.";
+
+    function triggerSecurity() {
+        alert(warningMessage);
+        window.location.href = redirectUrl;
+    }
+
+    // 1. Matikan Klik Kanan (Anti Context Menu)
+    document.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+    }, false);
+
+    // 2. Matikan Shortcut Keyboard (F12, Ctrl+Shift+I, Ctrl+U, dll)
+    document.addEventListener('keydown', function(e) {
+        if (
+            // F12
+            e.key === 'F12' || 
+            // Ctrl + Shift + I (Inspect)
+            (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i')) || 
+            // Ctrl + Shift + J (Console)
+            (e.ctrlKey && e.shiftKey && (e.key === 'J' || e.key === 'j')) || 
+            // Ctrl + U (View Source)
+            (e.ctrlKey && (e.key === 'U' || e.key === 'u')) || 
+            // Ctrl + Shift + C (Element Selector)
+            (e.ctrlKey && e.shiftKey && (e.key === 'C' || e.key === 'c')) ||
+            // Ctrl + S (Save Page)
+            (e.ctrlKey && (e.key === 'S' || e.key === 's'))
+        ) {
+            e.preventDefault();
+            triggerSecurity();
+        }
+    });
+
+    setInterval(function() {
+        const startTime = performance.now();
+        debugger; // Titik jebakan
+        const endTime = performance.now();
+        if (endTime - startTime > 100) {
+            triggerSecurity();
+        }
+    }, 1000);
+
+    // 4. Anti-Copas & Seleksi (Double Protection)
+    document.addEventListener('copy', function(e) {
+        e.preventDefault();
+    });
+    document.addEventListener('cut', function(e) {
+        e.preventDefault();
+    });
+})();
+
     </script>
 </body>
 </html>
