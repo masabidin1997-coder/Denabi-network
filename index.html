@@ -286,8 +286,24 @@
         /* Hide scrollbar for smooth UI */
         ::-webkit-scrollbar { width: 0px; background: transparent; }
     </style>
+  <link rel="manifest" href="https://quiet-poetry-4ac5.denabidin97.workers.dev/manifest.json">
+    <meta name="theme-color" content="#A30000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Den Abi">
+    <link rel="apple-touch-icon" href="https://i.imgur.com/PwmtlIn.png">
+
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('https://quiet-poetry-4ac5.denabidin97.workers.dev/sw.js')
+            .then(reg => console.log('Sistem Aplikasi Aktif!'))
+            .catch(err => console.log('Sistem Aplikasi berjalan mode web biasa.'));
+        });
+      }
+    </script>
 </head>
-<body class="" oncontextmenu="return false" onselectstart="return false" ondragstart="return false">
+<body class="">
 
     <canvas id="matrix-canvas"></canvas>
     
@@ -448,6 +464,22 @@
             <div class="w-10 h-10"></div> </div>
 
         <div id="tab-panel" class="p-6 space-y-6">
+          <div id="announcement-box" class="hidden mb-4">
+    <div class="bg-gradient-to-r from-blue-600 to-blue-800 p-4 rounded-2xl shadow-lg border border-white/10 flex items-start gap-3 relative overflow-hidden">
+        <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center text-white shrink-0 z-10">
+            <i class="fa-solid fa-bullhorn animate-bounce"></i>
+        </div>
+        <div class="flex-1 z-10">
+            <p class="text-[9px] font-black uppercase tracking-widest text-blue-200 mb-1">Pengumuman Admin</p>
+            <p id="announcement-text" class="text-xs font-bold text-white leading-relaxed italic">
+                </p>
+        </div>
+        <button onclick="this.parentElement.parentElement.remove()" class="text-white/50 hover:text-white transition z-10">
+            <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+        <i class="fa-solid fa-circle-info absolute -right-4 -bottom-4 text-7xl text-white opacity-10"></i>
+    </div>
+</div>
             <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col gap-6">
                 <div class="flex items-center gap-4">
                     <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center overflow-hidden border-2 border-blue-200">
@@ -651,7 +683,14 @@
             <ul class="space-y-2 px-4">
                 <li><a href="javascript:void(0)" onclick="switchTab('store'); toggleSidebar()" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-gray-700 hover:bg-gray-50 transition"><div class="w-8 flex justify-center"><i class="fa-solid fa-coins text-yellow-500 text-lg"></i></div> <span class="text-sm font-bold">Beli Koin</span></a></li>
                 <li><a href="javascript:void(0)" onclick="shareApp(); toggleSidebar()" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-gray-700 hover:bg-gray-50 transition"><div class="w-8 flex justify-center"><i class="fa-solid fa-share-nodes text-blue-500 text-lg"></i></div> <span class="text-sm font-bold">Bagikan Website</span></a></li>
-                <li><a href="javascript:void(0)" onclick="showToast('Bahasa diatur ke Indonesia'); toggleSidebar()" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-gray-700 hover:bg-gray-50 transition"><div class="w-8 flex justify-center"><i class="fa-solid fa-language text-green-500 text-lg"></i></div> <span class="text-sm font-bold">Ganti Bahasa</span></a></li>
+               <li>
+            <a href="javascript:void(0)" onclick="installAplikasi(); toggleSidebar()" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-gray-700 hover:bg-gray-50 transition">
+              <div class="w-8 flex justify-center">
+                <i class="fa-solid fa-download text-indigo-500 text-lg"></i>
+              </div>
+              <span class="text-sm font-bold">Install Aplikasi</span>
+            </a>
+          </li>
                 <li><a href="javascript:void(0)" onclick="toggleGuide(); toggleSidebar()" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-gray-700 hover:bg-gray-50 transition"><div class="w-8 flex justify-center"><i class="fa-solid fa-book text-purple-500 text-lg"></i></div> <span class="text-sm font-bold">Panduan & FAQ</span></a></li>
                 <li><a href="https://chat.whatsapp.com/DYrWGRJxczd7gPrmklg1Bu?mode=gi_t" target="_blank" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-gray-700 hover:bg-gray-50 transition"><div class="w-8 flex justify-center"><i class="fa-brands fa-whatsapp text-green-600 text-lg"></i></div> <span class="text-sm font-bold">Grup WA Support</span></a></li>
                 <li><a href="https://chat.whatsapp.com/EXIp6tS8kVB8aXXSR45YC5?mode=gi_t" target="_blank" class="flex items-center gap-4 px-4 py-3 rounded-2xl text-gray-700 hover:bg-gray-50 transition"><div class="w-8 flex justify-center"><i class="fa-solid fa-store text-orange-500 text-lg"></i></div> <span class="text-sm font-bold">Den Abi App Store</span></a></li>
@@ -1181,7 +1220,23 @@
             }
             refreshGlobalStats();
         };
+// Fungsi memuat pengumuman
+async function loadAnnouncement() {
+    try {
+        const res = await fetch(`${API_URL}/get-stats`);
+        const data = await res.json();
+        
+        if(data.success && data.announcement && data.announcement.trim() !== "") {
+            document.getElementById('announcement-box').classList.remove('hidden');
+            document.getElementById('announcement-text').innerText = data.announcement;
+        } else {
+            document.getElementById('announcement-box').classList.add('hidden');
+        }
+    } catch(e) { console.log("Gagal memuat pengumuman"); }
+}
 
+// Panggil fungsi di atas tiap kali web dibuka
+window.addEventListener('load', loadAnnouncement);
         window.toggleAuth = function(type) {
             const isSignUp = type === 'signup';
             $('tab-signup').classList.toggle('opacity-40', !isSignUp);
@@ -1428,65 +1483,70 @@
         setInterval(() => { if(localStorage.getItem('isLoggedIn') === 'true' && currentPhase === 'phase-dashboard') window.refreshCampaignStatus(); }, 20000);
         setInterval(refreshGlobalStats, 30000);
         window.toggleTheme = () => document.body.classList.toggle('dark-mode');
-        /* =========================================
-   DEN ABI SECURITY SYSTEM - ANTI THEFT CODE
-   =========================================
-*/
 
+// --- SISTEM INSTALL PWA (APLIKASI) ---
+        let deferredPrompt;
+
+        // Menangkap event instalasi dari browser
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Mencegah pop-up muncul otomatis seketika
+            e.preventDefault();
+            // Simpan event untuk dipicu lewat tombol
+            deferredPrompt = e;
+            console.log("Sistem PWA Siap Diinstal");
+        });
+
+        // Fungsi yang dipanggil saat tombol "Install Aplikasi" diklik
+        async function installAplikasi() {
+            if (deferredPrompt) {
+                // Tampilkan pop-up instalasi bawaan browser
+                deferredPrompt.prompt();
+                
+                // Tunggu respon user (Klik Install atau Batal)
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    showToast("Mulai Menginstal Aplikasi...", "fa-download");
+                }
+                // Hapus prompt karena hanya bisa dipakai sekali
+                deferredPrompt = null;
+            } else {
+                // Jika deferredPrompt kosong (berarti web sudah diinstal, atau buka dari iOS Safari yang tidak support tombol install otomatis)
+                showToast("Aplikasi sudah terinstal atau browser tidak mendukung (iOS gunakan fitur 'Add to Home Screen').", "fa-circle-info");
+            }
+        }
+   /* ============================================================
+   DEN ABI NETWORK - SECURITY SYSTEM (SAFE MODE)
+   ============================================================ */
 (function() {
-    // URL tujuan saat ada yang mencoba nakal
-    const redirectUrl = "https://google.com"; 
-    const warningMessage = "AKSES DITOLAK! Anda tidak diizinkan menginspeksi atau mencuri kode Den Abi Network.";
+    // 1. MATIKAN KLIK KANAN & BLOK TEKS
+    document.addEventListener('contextmenu', e => e.preventDefault());
+    document.addEventListener('selectstart', e => e.preventDefault());
+    document.addEventListener('dragstart', e => e.preventDefault());
 
-    function triggerSecurity() {
-        alert(warningMessage);
-        window.location.href = redirectUrl;
-    }
-
-    // 1. Matikan Klik Kanan (Anti Context Menu)
-    document.addEventListener('contextmenu', function(e) {
-        e.preventDefault();
-    }, false);
-
-    // 2. Matikan Shortcut Keyboard (F12, Ctrl+Shift+I, Ctrl+U, dll)
+    // 2. MATIKAN SHORTCUT KEYBOARD INSPECT & VIEW SOURCE
     document.addEventListener('keydown', function(e) {
         if (
-            // F12
             e.key === 'F12' || 
-            // Ctrl + Shift + I (Inspect)
-            (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i')) || 
-            // Ctrl + Shift + J (Console)
-            (e.ctrlKey && e.shiftKey && (e.key === 'J' || e.key === 'j')) || 
-            // Ctrl + U (View Source)
-            (e.ctrlKey && (e.key === 'U' || e.key === 'u')) || 
-            // Ctrl + Shift + C (Element Selector)
-            (e.ctrlKey && e.shiftKey && (e.key === 'C' || e.key === 'c')) ||
-            // Ctrl + S (Save Page)
-            (e.ctrlKey && (e.key === 'S' || e.key === 's'))
+            (e.ctrlKey && e.shiftKey && ['I', 'J', 'C'].includes(e.key.toUpperCase())) || // Ctrl+Shift+I/J/C
+            (e.ctrlKey && ['U', 'S', 'P'].includes(e.key.toUpperCase())) // Ctrl+U (View Source), Ctrl+S (Save)
         ) {
             e.preventDefault();
-            triggerSecurity();
+            // Cukup tampilkan alert, jangan auto-redirect agar Google tidak curiga
+            alert("Sistem Keamanan Den Abi: Akses pintasan ini dinonaktifkan.");
+            return false;
         }
     });
 
-    setInterval(function() {
-        const startTime = performance.now();
-        debugger; // Titik jebakan
-        const endTime = performance.now();
-        if (endTime - startTime > 100) {
-            triggerSecurity();
-        }
-    }, 1000);
+    // 3. PERINGATAN KONSOL ALA FACEBOOK
+    // Jika ada yang nekat buka konsol lewat menu browser, mereka akan disambut pesan ini
+    setTimeout(() => {
+        console.clear();
+        console.log("%cTUNGGU DULU!", "color: red; font-family: sans-serif; font-size: 40px; font-weight: bold; text-shadow: 1px 1px 2px black;");
+        console.log("%cIni adalah fitur browser khusus developer. Jika seseorang menyuruh Anda menyalin (copy) dan menempel (paste) kode di sini untuk mendapatkan koin Den Abi gratis atau trik Adsterra, itu adalah PENIPUAN (SCAM).", "font-family: sans-serif; font-size: 16px; color: #333;");
+        console.log("%cMengeksekusi kode di sini dapat memberikan peretas akses penuh ke akun Den Abi Anda.", "font-family: sans-serif; font-size: 16px; font-weight: bold; color: red;");
+    }, 2000);
 
-    // 4. Anti-Copas & Seleksi (Double Protection)
-    document.addEventListener('copy', function(e) {
-        e.preventDefault();
-    });
-    document.addEventListener('cut', function(e) {
-        e.preventDefault();
-    });
 })();
-
     </script>
 </body>
 </html>
